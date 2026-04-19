@@ -1,0 +1,209 @@
+{
+  "batches": [
+    {
+      "batchId": "batch_69e194077a5081908cd4b4ff8145af41",
+      "status": "completed",
+      "endpoint": "/v1/responses",
+      "inputFileId": "file-WuF1zS3cd13WiNqm9vBk1p",
+      "outputFileId": "file-SaYa3XrZgcW7sX22eYMC7y",
+      "errorFileId": null,
+      "inputSource": "/Users/tamilvendhankanagarasu/workspace/selvam/companies.json",
+      "inputFileName": "batch-input-2026-04-17T01-59-33-646Z.jsonl",
+      "inputFilePath": "/Users/tamilvendhankanagarasu/workspace/selvam/batch-input-2026-04-17T01-59-33-646Z.jsonl",
+      "companyCount": 27,
+      "companies": [
+        "Tesla, Inc.",
+        "Nvidia Corporation",
+        "Amazon.com Inc.",
+        "Oracle Corp.",
+        "Berkshire Hathaway Inc. Hld B",
+        "Rocket Lab Usa Inc",
+        "Rivian Automotive, Inc.",
+        "Broadcom Inc.",
+        "Advanced Micro Devices, Inc.",
+        "Palo Alto Networks, Inc.",
+        "Palantir Technologies Inc",
+        "Kkr & Co. L.p.",
+        "Crowdstrike Holdings, Inc.",
+        "Taiwan Semiconductor Manufacturing Co.",
+        "Hims & Hers Health Inc",
+        "Vertex Pharmaceuticals Incorporated",
+        "Uipath, Inc.",
+        "At&t, Inc.",
+        "Visa, Inc.",
+        "Descartes Systems Group Inc",
+        "Synopsys Inc.",
+        "Marathon Digital Holdings Inc",
+        "Motorola Solutions, Inc.",
+        "Tencent Music Entertainment Group",
+        "Ubiquiti Inc.",
+        "Exxon Mobil Corp.",
+        "Mplx Lp"
+      ],
+      "model": "gpt-5.1",
+      "prompt": "Assess this company on business quality, management quality, financial strength, growth runway, valuation, risks, and potential mispricing.",
+      "reasoning": {
+        "effort": "high",
+        "summary": "auto"
+      },
+      "maxOutputTokens": null,
+      "submittedAt": "2026-04-17T01:59:36.358Z",
+      "lastCheckedAt": "2026-04-17T02:40:03.578Z",
+      "requestCounts": {
+        "total": 27,
+        "completed": 27,
+        "failed": 0
+      },
+      "outputDownloaded": true,
+      "errorDownloaded": false,
+      "parsedResultsWritten": true,
+      "inProgressAt": "2026-04-17T02:00:36.000Z",
+      "finalizingAt": "2026-04-17T02:11:06.000Z",
+      "completedAt": "2026-04-17T02:11:12.000Z",
+      "failedAt": null,
+      "expiredAt": null,
+      "cancelledAt": null,
+      "outputFileName": "batch-output-batch_69e194077a5081908cd4b4ff8145af41.jsonl",
+      "outputFilePath": "/Users/tamilvendhankanagarasu/workspace/selvam/batch-output-batch_69e194077a5081908cd4b4ff8145af41.jsonl",
+      "parsedResultsFileName": "batch-results-batch_69e194077a5081908cd4b4ff8145af41.json",
+      "parsedResultsFilePath": "/Users/tamilvendhankanagarasu/workspace/selvam/batch-results-batch_69e194077a5081908cd4b4ff8145af41.json"
+    }
+  ],
+  "submittedCompanies": {
+    "tesla, inc.": {
+      "company": "Tesla, Inc.",
+      "firstBatchId": "batch_69e194077a5081908cd4b4ff8145af41",
+      "submittedAt": "2026-04-17T01:59:36.358Z"
+    },
+    "nvidia corporation": {
+      "company": "Nvidia Corporation",
+      "firstBatchId": "batch_69e194077a5081908cd4b4ff8145af41",
+      "submittedAt": "2026-04-17T01:59:36.358Z"
+    },
+    "amazon.com inc.": {
+      "company": "Amazon.com Inc.",
+      "firstBatchId": "batch_69e194077a5081908cd4b4ff8145af41",
+      "submittedAt": "2026-04-17T01:59:36.358Z"
+    },
+    "oracle corp.": {
+      "company": "Oracle Corp.",
+      "firstBatchId": "batch_69e194077a5081908cd4b4ff8145af41",
+      "submittedAt": "2026-04-17T01:59:36.358Z"
+    },
+    "berkshire hathaway inc. hld b": {
+      "company": "Berkshire Hathaway Inc. Hld B",
+      "firstBatchId": "batch_69e194077a5081908cd4b4ff8145af41",
+      "submittedAt": "2026-04-17T01:59:36.358Z"
+    },
+    "rocket lab usa inc": {
+      "company": "Rocket Lab Usa Inc",
+      "firstBatchId": "batch_69e194077a5081908cd4b4ff8145af41",
+      "submittedAt": "2026-04-17T01:59:36.358Z"
+    },
+    "rivian automotive, inc.": {
+      "company": "Rivian Automotive, Inc.",
+      "firstBatchId": "batch_69e194077a5081908cd4b4ff8145af41",
+      "submittedAt": "2026-04-17T01:59:36.358Z"
+    },
+    "broadcom inc.": {
+      "company": "Broadcom Inc.",
+      "firstBatchId": "batch_69e194077a5081908cd4b4ff8145af41",
+      "submittedAt": "2026-04-17T01:59:36.358Z"
+    },
+    "advanced micro devices, inc.": {
+      "company": "Advanced Micro Devices, Inc.",
+      "firstBatchId": "batch_69e194077a5081908cd4b4ff8145af41",
+      "submittedAt": "2026-04-17T01:59:36.358Z"
+    },
+    "palo alto networks, inc.": {
+      "company": "Palo Alto Networks, Inc.",
+      "firstBatchId": "batch_69e194077a5081908cd4b4ff8145af41",
+      "submittedAt": "2026-04-17T01:59:36.358Z"
+    },
+    "palantir technologies inc": {
+      "company": "Palantir Technologies Inc",
+      "firstBatchId": "batch_69e194077a5081908cd4b4ff8145af41",
+      "submittedAt": "2026-04-17T01:59:36.358Z"
+    },
+    "kkr & co. l.p.": {
+      "company": "Kkr & Co. L.p.",
+      "firstBatchId": "batch_69e194077a5081908cd4b4ff8145af41",
+      "submittedAt": "2026-04-17T01:59:36.358Z"
+    },
+    "crowdstrike holdings, inc.": {
+      "company": "Crowdstrike Holdings, Inc.",
+      "firstBatchId": "batch_69e194077a5081908cd4b4ff8145af41",
+      "submittedAt": "2026-04-17T01:59:36.358Z"
+    },
+    "taiwan semiconductor manufacturing co.": {
+      "company": "Taiwan Semiconductor Manufacturing Co.",
+      "firstBatchId": "batch_69e194077a5081908cd4b4ff8145af41",
+      "submittedAt": "2026-04-17T01:59:36.358Z"
+    },
+    "hims & hers health inc": {
+      "company": "Hims & Hers Health Inc",
+      "firstBatchId": "batch_69e194077a5081908cd4b4ff8145af41",
+      "submittedAt": "2026-04-17T01:59:36.358Z"
+    },
+    "vertex pharmaceuticals incorporated": {
+      "company": "Vertex Pharmaceuticals Incorporated",
+      "firstBatchId": "batch_69e194077a5081908cd4b4ff8145af41",
+      "submittedAt": "2026-04-17T01:59:36.358Z"
+    },
+    "uipath, inc.": {
+      "company": "Uipath, Inc.",
+      "firstBatchId": "batch_69e194077a5081908cd4b4ff8145af41",
+      "submittedAt": "2026-04-17T01:59:36.358Z"
+    },
+    "at&t, inc.": {
+      "company": "At&t, Inc.",
+      "firstBatchId": "batch_69e194077a5081908cd4b4ff8145af41",
+      "submittedAt": "2026-04-17T01:59:36.358Z"
+    },
+    "visa, inc.": {
+      "company": "Visa, Inc.",
+      "firstBatchId": "batch_69e194077a5081908cd4b4ff8145af41",
+      "submittedAt": "2026-04-17T01:59:36.358Z"
+    },
+    "descartes systems group inc": {
+      "company": "Descartes Systems Group Inc",
+      "firstBatchId": "batch_69e194077a5081908cd4b4ff8145af41",
+      "submittedAt": "2026-04-17T01:59:36.358Z"
+    },
+    "synopsys inc.": {
+      "company": "Synopsys Inc.",
+      "firstBatchId": "batch_69e194077a5081908cd4b4ff8145af41",
+      "submittedAt": "2026-04-17T01:59:36.358Z"
+    },
+    "marathon digital holdings inc": {
+      "company": "Marathon Digital Holdings Inc",
+      "firstBatchId": "batch_69e194077a5081908cd4b4ff8145af41",
+      "submittedAt": "2026-04-17T01:59:36.358Z"
+    },
+    "motorola solutions, inc.": {
+      "company": "Motorola Solutions, Inc.",
+      "firstBatchId": "batch_69e194077a5081908cd4b4ff8145af41",
+      "submittedAt": "2026-04-17T01:59:36.358Z"
+    },
+    "tencent music entertainment group": {
+      "company": "Tencent Music Entertainment Group",
+      "firstBatchId": "batch_69e194077a5081908cd4b4ff8145af41",
+      "submittedAt": "2026-04-17T01:59:36.358Z"
+    },
+    "ubiquiti inc.": {
+      "company": "Ubiquiti Inc.",
+      "firstBatchId": "batch_69e194077a5081908cd4b4ff8145af41",
+      "submittedAt": "2026-04-17T01:59:36.358Z"
+    },
+    "exxon mobil corp.": {
+      "company": "Exxon Mobil Corp.",
+      "firstBatchId": "batch_69e194077a5081908cd4b4ff8145af41",
+      "submittedAt": "2026-04-17T01:59:36.358Z"
+    },
+    "mplx lp": {
+      "company": "Mplx Lp",
+      "firstBatchId": "batch_69e194077a5081908cd4b4ff8145af41",
+      "submittedAt": "2026-04-17T01:59:36.358Z"
+    }
+  }
+}

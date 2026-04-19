@@ -1,0 +1,13 @@
+node_modules
+webapp/node_modules
+goserver/.env
+goserver/.env.local
+.DS_Store
+*.jsonl
+batch-results-batch_69e194077a5081908cd4b4ff8145af41.json
+package-lock.json
+
+config.json
+batch-config.json
+*/.env
+*/.env.*
