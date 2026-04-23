@@ -16,6 +16,7 @@ type AppConfig struct {
 
 type ServerConfig struct {
 	Port              int           `json:"port" yaml:"port"`
+	FrontendRootDir   string        `json:"frontendRootDir,omitempty" yaml:"frontendRootDir,omitempty"`
 	ReadHeaderTimeout time.Duration `json:"readHeaderTimeout" yaml:"readHeaderTimeout"`
 }
 

@@ -35,6 +35,7 @@ func Build(
 	mongoClient *mongo.Client,
 	database *mongo.Database,
 	config platformconfig.AppConfig,
+	legacyJobsService *legacyservice.JobsService,
 ) (*Application, error) {
 	collections := mongorepo.NewCollections(database, config.Mongo.Collections)
 	if err := mongorepo.EnsureIndexes(ctx, database, config.Mongo.Collections); err != nil {
@@ -61,12 +62,12 @@ func Build(
 	overrideService := platformservice.NewOverrideService(overrideRepository, reviewRepository)
 	projectionService := platformservice.NewProjectionService(positionRepository)
 
-	var (
-		legacyJobsService *legacyservice.JobsService
-		aiReviewEngine    = ports.AIReviewEngine(&platformai.NoopAIReviewEngine{})
-	)
+	var aiReviewEngine = ports.AIReviewEngine(&platformai.NoopAIReviewEngine{})
 
-	if config.AsyncAI.Enabled && config.AsyncAI.APIKey != "" {
+	if config.AsyncAI.Enabled && legacyJobsService != nil {
+		legacyJobsRepository := legacyrepo.NewJobsRepository(database, config.Mongo.Collections.AIBatchJobs)
+		aiReviewEngine = platformai.NewLegacyBatchAIReviewEngine(legacyJobsService, legacyJobsRepository)
+	} else if config.AsyncAI.Enabled && config.AsyncAI.APIKey != "" {
 		legacyCfg := legacyconfig.Config{
 			MongoDB: legacyconfig.MongoConfig{
 				JobsCollectionName:             config.Mongo.Collections.AIBatchJobs,

@@ -34,6 +34,14 @@ func (client *Client) Database() *mongo.Database {
 	return client.db
 }
 
+func (client *Client) MongoClient() *mongo.Client {
+	if client == nil {
+		return nil
+	}
+
+	return client.client
+}
+
 func (client *Client) Close(ctx context.Context) error {
 	if client == nil || client.client == nil {
 		return nil

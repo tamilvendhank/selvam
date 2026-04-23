@@ -20,6 +20,7 @@ type Handler struct {
 	jobsService                *service.JobsService
 	proceduresService          *service.ProceduresService
 	procedureExecutionsService *service.ProcedureExecutionsService
+	platformAPI                http.Handler
 	logger                     *zap.Logger
 }
 
@@ -28,6 +29,7 @@ func NewHandler(
 	jobsService *service.JobsService,
 	proceduresService *service.ProceduresService,
 	procedureExecutionsService *service.ProcedureExecutionsService,
+	platformAPI http.Handler,
 	logger *zap.Logger,
 ) http.Handler {
 	if logger == nil {
@@ -39,6 +41,7 @@ func NewHandler(
 		jobsService:                jobsService,
 		proceduresService:          proceduresService,
 		procedureExecutionsService: procedureExecutionsService,
+		platformAPI:                platformAPI,
 		logger:                     logger,
 	}
 }
@@ -61,6 +64,13 @@ func (handler *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	switch {
+	case strings.HasPrefix(r.URL.Path, "/api/v1/") || r.URL.Path == "/api/v1":
+		if handler.platformAPI != nil {
+			handler.platformAPI.ServeHTTP(w, r)
+			return
+		}
+		http.NotFound(w, r)
+		return
 	case r.Method == http.MethodGet && r.URL.Path == "/api/submissions":
 		handler.listSubmissions(w, r)
 	case r.Method == http.MethodPost && r.URL.Path == "/api/submissions":
@@ -104,6 +114,10 @@ func (handler *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	case r.Method == http.MethodGet && r.URL.Path == "/procedure-executions":
 		handler.frontend.ServeIndex(w, http.StatusOK)
 	case r.Method == http.MethodGet && strings.HasPrefix(r.URL.Path, "/procedure-executions/"):
+		handler.frontend.ServeIndex(w, http.StatusOK)
+	case r.Method == http.MethodGet && r.URL.Path == "/platform":
+		handler.frontend.ServeIndex(w, http.StatusOK)
+	case r.Method == http.MethodGet && strings.HasPrefix(r.URL.Path, "/platform/"):
 		handler.frontend.ServeIndex(w, http.StatusOK)
 	case r.Method == http.MethodGet && r.URL.Path == "/jobs":
 		http.Redirect(w, r, "/submissions", http.StatusFound)

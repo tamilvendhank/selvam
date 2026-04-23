@@ -9,6 +9,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	platformconfig "goserver/internal/platform/config"
 )
 
 type Config struct {
@@ -18,6 +20,7 @@ type Config struct {
 	Frontend FrontendConfig
 	Worker   WorkerConfig
 	Logging  LoggingConfig
+	Platform platformconfig.AppConfig
 }
 
 type MongoConfig struct {
@@ -115,7 +118,7 @@ func loadConfig(requireAPIKey bool) (Config, error) {
 		return Config{}, err
 	}
 
-	return Config{
+	config := Config{
 		Port: port,
 		MongoDB: MongoConfig{
 			URI:                            envOrDefault("MONGODB_URI", "mongodb://127.0.0.1:27017"),
@@ -148,7 +151,15 @@ func loadConfig(requireAPIKey bool) (Config, error) {
 			Encoding:    envOrDefault("LOG_ENCODING", "console"),
 			Development: parseBool(envOrDefault("LOG_DEVELOPMENT", "false")),
 		},
-	}, nil
+	}
+
+	platform, err := buildPlatformConfig(config)
+	if err != nil {
+		return Config{}, err
+	}
+	config.Platform = platform
+
+	return config, nil
 }
 
 func envOrDefault(name, fallback string) string {
@@ -302,4 +313,73 @@ func defaultEnvFilePath() string {
 
 func defaultEnvLocalFilePath() string {
 	return defaultEnvFilePath() + ".local"
+}
+
+func buildPlatformConfig(base Config) (platformconfig.AppConfig, error) {
+	platform := platformconfig.Default()
+
+	platform.Environment = envOrDefault("PLATFORM_ENVIRONMENT", platform.Environment)
+	platform.Server.Port = base.Port
+	platform.Server.FrontendRootDir = base.Frontend.RootDir
+
+	platform.Mongo.URI = envOrDefault("PLATFORM_MONGODB_URI", base.MongoDB.URI)
+	platform.Mongo.Database = envOrDefault("PLATFORM_MONGODB_DB_NAME", base.MongoDB.DBName)
+	platform.Mongo.Collections.Companies = envOrDefault("PLATFORM_COMPANIES_COLLECTION", platform.Mongo.Collections.Companies)
+	platform.Mongo.Collections.CompanyReviews = envOrDefault("PLATFORM_COMPANY_REVIEWS_COLLECTION", platform.Mongo.Collections.CompanyReviews)
+	platform.Mongo.Collections.InvestmentTheses = envOrDefault("PLATFORM_INVESTMENT_THESES_COLLECTION", platform.Mongo.Collections.InvestmentTheses)
+	platform.Mongo.Collections.WorkflowRuns = envOrDefault("PLATFORM_WORKFLOW_RUNS_COLLECTION", platform.Mongo.Collections.WorkflowRuns)
+	platform.Mongo.Collections.ConfigSnapshots = envOrDefault("PLATFORM_CONFIG_SNAPSHOTS_COLLECTION", platform.Mongo.Collections.ConfigSnapshots)
+	platform.Mongo.Collections.CapitalAllocationRuns = envOrDefault("PLATFORM_CAPITAL_ALLOCATIONS_COLLECTION", platform.Mongo.Collections.CapitalAllocationRuns)
+	platform.Mongo.Collections.ManualOverrides = envOrDefault("PLATFORM_MANUAL_OVERRIDES_COLLECTION", platform.Mongo.Collections.ManualOverrides)
+	platform.Mongo.Collections.CurrentPositions = envOrDefault("PLATFORM_CURRENT_POSITIONS_COLLECTION", platform.Mongo.Collections.CurrentPositions)
+	platform.Mongo.Collections.AIBatchJobs = base.MongoDB.JobsCollectionName
+	platform.Mongo.Collections.AIBatchIterations = base.MongoDB.SubmissionIterationsCollection
+
+	platform.Global.DefaultTimezone = envOrDefault("PLATFORM_DEFAULT_TIMEZONE", platform.Global.DefaultTimezone)
+	platform.Global.AIProviders.DefaultProvider = envOrDefault("PLATFORM_AI_PROVIDER", platform.Global.AIProviders.DefaultProvider)
+	platform.Global.AIProviders.DefaultModel = envOrDefault("PLATFORM_OPENAI_MODEL", firstNonEmptyString(base.OpenAI.Model, platform.Global.AIProviders.DefaultModel))
+	platform.Global.AIProviders.ReviewPromptVersion = envOrDefault("PLATFORM_REVIEW_PROMPT_VERSION", platform.Global.AIProviders.ReviewPromptVersion)
+	platform.Global.FeatureFlags.EnableAsyncAIReview = parseBool(envOrDefault(
+		"PLATFORM_ENABLE_ASYNC_AI_REVIEW",
+		strconv.FormatBool(platform.Global.FeatureFlags.EnableAsyncAIReview),
+	))
+	platform.Global.FeatureFlags.EnableCurrentPositionProjection = parseBool(envOrDefault(
+		"PLATFORM_ENABLE_CURRENT_POSITION_PROJECTION",
+		strconv.FormatBool(platform.Global.FeatureFlags.EnableCurrentPositionProjection),
+	))
+	platform.Global.FeatureFlags.EnableTradingWorkflow = parseBool(envOrDefault(
+		"PLATFORM_ENABLE_TRADING_WORKFLOW",
+		strconv.FormatBool(platform.Global.FeatureFlags.EnableTradingWorkflow),
+	))
+
+	platform.AsyncAI.Enabled = parseBool(envOrDefault("PLATFORM_ASYNC_AI_ENABLED", strconv.FormatBool(platform.AsyncAI.Enabled)))
+	platform.AsyncAI.Provider = envOrDefault("PLATFORM_AI_PROVIDER", platform.AsyncAI.Provider)
+	platform.AsyncAI.Model = envOrDefault("PLATFORM_OPENAI_MODEL", firstNonEmptyString(base.OpenAI.Model, platform.AsyncAI.Model))
+	platform.AsyncAI.PromptVersion = envOrDefault("PLATFORM_REVIEW_PROMPT_VERSION", platform.AsyncAI.PromptVersion)
+	platform.AsyncAI.ResponseInstructions = envOrDefault("PLATFORM_OPENAI_RESPONSE_INSTRUCTIONS", platform.AsyncAI.ResponseInstructions)
+	platform.AsyncAI.BatchEndpoint = firstNonEmptyString(base.OpenAI.BatchEndpoint, platform.AsyncAI.BatchEndpoint)
+	platform.AsyncAI.CompletionWindow = firstNonEmptyString(base.OpenAI.CompletionWindow, platform.AsyncAI.CompletionWindow)
+	platform.AsyncAI.BaseURL = firstNonEmptyString(base.OpenAI.BaseURL, platform.AsyncAI.BaseURL)
+	platform.AsyncAI.APIKey = base.OpenAI.APIKey
+	platform.AsyncAI.Worker.Enabled = base.Worker.Enabled
+	platform.AsyncAI.Worker.RefreshInterval = base.Worker.SubmissionRefreshInterval
+	platform.AsyncAI.Worker.MinBatchRefreshAge = base.Worker.MinBatchRefreshAge
+	platform.AsyncAI.Worker.FollowUpClaimTimeout = base.Worker.FollowUpClaimTimeout
+	platform.AsyncAI.Worker.MaxBatchesPerPass = base.Worker.MaxBatchesPerPass
+
+	if err := platform.Validate(); err != nil {
+		return platformconfig.AppConfig{}, fmt.Errorf("invalid platform config: %w", err)
+	}
+
+	return platform, nil
+}
+
+func firstNonEmptyString(values ...string) string {
+	for _, value := range values {
+		if strings.TrimSpace(value) != "" {
+			return value
+		}
+	}
+
+	return ""
 }

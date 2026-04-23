@@ -1,6 +1,6 @@
 # Selvam Platform Foundation
 
-This phase builds the production-grade backend skeleton for an AI-assisted India equities and ETFs investing and trading platform. It is intentionally backend-first and async-first: it persists historical review truth, preserves workflow/config snapshots, and keeps AI orchestration behind versioned workflow and provider contracts.
+This phase builds the production-grade backend skeleton for an AI-assisted India equities and ETFs investing and trading platform. It is intentionally backend-first and async-first: it persists historical review truth, preserves workflow/config snapshots, and keeps AI orchestration behind versioned workflow and provider contracts. The platform is integrated into the existing Go server instead of running as a separate API process.
 
 ## Architecture Summary
 
@@ -9,13 +9,13 @@ This phase builds the production-grade backend skeleton for an AI-assisted India
 - `companies`, `investment_theses`, `workflow_runs`, `config_snapshots`, `capital_allocation_runs`, `manual_overrides`, and `current_positions` stay in separate collections because their lifecycle and query patterns differ.
 - Async AI flows use a provider interface and a concrete adapter over the existing OpenAI batch job subsystem. Workflow steps store pollable async task references rather than waiting synchronously.
 - `/api/v1` exposes stable contracts for future web UI work: companies, reviews, theses, workflow runs, capital allocation, config inspection, overrides, and positions.
+- The same server still exposes the legacy batch automation routes, so `/submissions` and `/platform` now share one origin and one configuration tree.
 
 ## Project Tree
 
 ```text
 cmd/
   goserver/
-  server/
 configs/
   platform.example.yaml
 internal/
@@ -63,16 +63,18 @@ testdata/
 ## Running
 
 1. Start MongoDB locally.
-2. Set `PLATFORM_CONFIG_FILE` if you want a config path other than `configs/platform.example.yaml`.
-3. Set `asyncAi.apiKey` in config or inject it from your own config file if you want the legacy batch adapter enabled.
-4. Run:
+2. Set the usual main-server environment variables. Platform settings are now derived from the primary config object and can be tuned with `PLATFORM_*` environment overrides when needed.
+3. Run:
 
 ```bash
-go run ./cmd/server
+go run ./cmd/goserver
 ```
+
+The server will expose both the existing batch automation routes and the new platform routes.
 
 ## API Surface
 
+- Legacy batch APIs remain available under `/api/...`.
 - `GET /api/v1/companies`
 - `GET /api/v1/companies/{id}`
 - `GET /api/v1/companies/{id}/reviews`
@@ -115,3 +117,4 @@ go run ./cmd/server
 - Percentage fields use whole-percentage units, so `1` means `1%` and `70` means `70%`.
 - Config snapshots intentionally exclude secrets such as provider API keys.
 - The phase-1 server focuses on stable contracts and persistence, not final scoring formulas, broker execution, or final front-end UX.
+- `configs/platform.example.yaml` remains as a reference snapshot of platform defaults, but the integrated server now sources platform settings from the primary server config object.

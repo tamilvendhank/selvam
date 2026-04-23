@@ -15,6 +15,7 @@ import (
 	"goserver/internal/httpapi"
 	"goserver/internal/logging"
 	openaiapi "goserver/internal/openai"
+	platformapp "goserver/internal/platform/app"
 	"goserver/internal/repository"
 	"goserver/internal/service"
 	"goserver/internal/web"
@@ -72,7 +73,19 @@ func main() {
 		).Start(rootContext)
 	}
 
-	handler := httpapi.NewHandler(frontend, jobsService, proceduresService, procedureExecutionsService, logger.Named("httpapi"))
+	platformApplication, err := platformapp.Build(rootContext, mongoClient.MongoClient(), mongoClient.Database(), cfg.Platform, jobsService)
+	if err != nil {
+		serverLogger.Fatal("failed to build platform application", zap.Error(err))
+	}
+
+	handler := httpapi.NewHandler(
+		frontend,
+		jobsService,
+		proceduresService,
+		procedureExecutionsService,
+		platformApplication.Handler,
+		logger.Named("httpapi"),
+	)
 	server := &http.Server{
 		Addr:              ":" + strconv.Itoa(cfg.Port),
 		Handler:           handler,
