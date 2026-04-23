@@ -1,67 +1,22 @@
 package mongo
 
 import (
-	"goserver/internal/platform/domain"
+	companypkg "goserver/internal/domain/company"
+	reviewpkg "goserver/internal/domain/review"
+	legacydomain "goserver/internal/platform/domain"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type companyDocument struct {
-	ObjectID       primitive.ObjectID `bson:"_id,omitempty"`
-	domain.Company `bson:",inline"`
+	companypkg.Company `bson:",inline"`
 }
 
 type companyReviewDocument struct {
-	ObjectID             primitive.ObjectID `bson:"_id,omitempty"`
-	domain.CompanyReview `bson:",inline"`
-}
-
-type investmentThesisDocument struct {
-	ObjectID                primitive.ObjectID `bson:"_id,omitempty"`
-	domain.InvestmentThesis `bson:",inline"`
-}
-
-type workflowRunDocument struct {
-	ObjectID           primitive.ObjectID `bson:"_id,omitempty"`
-	domain.WorkflowRun `bson:",inline"`
-}
-
-type workflowStepRunDocument struct {
-	ObjectID               primitive.ObjectID `bson:"_id,omitempty"`
-	domain.WorkflowStepRun `bson:",inline"`
-}
-
-type configSnapshotDocument struct {
-	ObjectID              primitive.ObjectID `bson:"_id,omitempty"`
-	domain.ConfigSnapshot `bson:",inline"`
-}
-
-type capitalAllocationRunDocument struct {
-	ObjectID                    primitive.ObjectID `bson:"_id,omitempty"`
-	domain.CapitalAllocationRun `bson:",inline"`
-}
-
-type manualOverrideDocument struct {
-	ObjectID              primitive.ObjectID `bson:"_id,omitempty"`
-	domain.ManualOverride `bson:",inline"`
-}
-
-type currentPositionDocument struct {
-	ObjectID               primitive.ObjectID `bson:"_id,omitempty"`
-	domain.CurrentPosition `bson:",inline"`
-}
-
-type aiBatchJobDocument struct {
-	ObjectID          primitive.ObjectID `bson:"_id,omitempty"`
-	domain.AIBatchJob `bson:",inline"`
-}
-
-type aiBatchItemDocument struct {
-	ObjectID           primitive.ObjectID `bson:"_id,omitempty"`
-	domain.AIBatchItem `bson:",inline"`
+	reviewpkg.CompanyReview `bson:",inline"`
 }
 
 type jobReconciliationLogDocument struct {
-	ObjectID                    primitive.ObjectID `bson:"_id,omitempty"`
-	domain.JobReconciliationLog `bson:",inline"`
+	ObjectID                          primitive.ObjectID `bson:"_id,omitempty"`
+	legacydomain.JobReconciliationLog `bson:",inline"`
 }
