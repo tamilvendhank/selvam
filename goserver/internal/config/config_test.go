@@ -44,8 +44,11 @@ func TestBuildPlatformConfigUsesPrimaryServerSettings(t *testing.T) {
 	if platform.Mongo.Database != base.MongoDB.DBName {
 		t.Fatalf("expected platform mongo database %q, got %q", base.MongoDB.DBName, platform.Mongo.Database)
 	}
-	if platform.Mongo.Collections.AIBatchJobs != base.MongoDB.JobsCollectionName {
-		t.Fatalf("expected batch jobs collection %q, got %q", base.MongoDB.JobsCollectionName, platform.Mongo.Collections.AIBatchJobs)
+	if platform.Mongo.Collections.ProviderBatchJobs != base.MongoDB.JobsCollectionName {
+		t.Fatalf("expected provider batch jobs collection %q, got %q", base.MongoDB.JobsCollectionName, platform.Mongo.Collections.ProviderBatchJobs)
+	}
+	if platform.Mongo.Collections.AIBatchJobs != "ai_batch_jobs" {
+		t.Fatalf("expected platform async batch jobs collection %q, got %q", "ai_batch_jobs", platform.Mongo.Collections.AIBatchJobs)
 	}
 	if platform.AsyncAI.APIKey != base.OpenAI.APIKey {
 		t.Fatalf("expected platform async ai api key to be carried over")

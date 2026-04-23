@@ -328,12 +328,16 @@ func buildPlatformConfig(base Config) (platformconfig.AppConfig, error) {
 	platform.Mongo.Collections.CompanyReviews = envOrDefault("PLATFORM_COMPANY_REVIEWS_COLLECTION", platform.Mongo.Collections.CompanyReviews)
 	platform.Mongo.Collections.InvestmentTheses = envOrDefault("PLATFORM_INVESTMENT_THESES_COLLECTION", platform.Mongo.Collections.InvestmentTheses)
 	platform.Mongo.Collections.WorkflowRuns = envOrDefault("PLATFORM_WORKFLOW_RUNS_COLLECTION", platform.Mongo.Collections.WorkflowRuns)
+	platform.Mongo.Collections.WorkflowStepRuns = envOrDefault("PLATFORM_WORKFLOW_STEP_RUNS_COLLECTION", platform.Mongo.Collections.WorkflowStepRuns)
 	platform.Mongo.Collections.ConfigSnapshots = envOrDefault("PLATFORM_CONFIG_SNAPSHOTS_COLLECTION", platform.Mongo.Collections.ConfigSnapshots)
 	platform.Mongo.Collections.CapitalAllocationRuns = envOrDefault("PLATFORM_CAPITAL_ALLOCATIONS_COLLECTION", platform.Mongo.Collections.CapitalAllocationRuns)
 	platform.Mongo.Collections.ManualOverrides = envOrDefault("PLATFORM_MANUAL_OVERRIDES_COLLECTION", platform.Mongo.Collections.ManualOverrides)
 	platform.Mongo.Collections.CurrentPositions = envOrDefault("PLATFORM_CURRENT_POSITIONS_COLLECTION", platform.Mongo.Collections.CurrentPositions)
-	platform.Mongo.Collections.AIBatchJobs = base.MongoDB.JobsCollectionName
-	platform.Mongo.Collections.AIBatchIterations = base.MongoDB.SubmissionIterationsCollection
+	platform.Mongo.Collections.AIBatchJobs = envOrDefault("PLATFORM_AI_BATCH_JOBS_COLLECTION", platform.Mongo.Collections.AIBatchJobs)
+	platform.Mongo.Collections.AIBatchItems = envOrDefault("PLATFORM_AI_BATCH_ITEMS_COLLECTION", platform.Mongo.Collections.AIBatchItems)
+	platform.Mongo.Collections.JobReconciliationLogs = envOrDefault("PLATFORM_JOB_RECONCILIATION_LOGS_COLLECTION", platform.Mongo.Collections.JobReconciliationLogs)
+	platform.Mongo.Collections.ProviderBatchJobs = base.MongoDB.JobsCollectionName
+	platform.Mongo.Collections.ProviderBatchIterations = base.MongoDB.SubmissionIterationsCollection
 
 	platform.Global.DefaultTimezone = envOrDefault("PLATFORM_DEFAULT_TIMEZONE", platform.Global.DefaultTimezone)
 	platform.Global.AIProviders.DefaultProvider = envOrDefault("PLATFORM_AI_PROVIDER", platform.Global.AIProviders.DefaultProvider)

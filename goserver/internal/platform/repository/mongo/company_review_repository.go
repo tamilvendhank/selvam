@@ -37,6 +37,10 @@ func (repository *CompanyReviewRepository) Create(ctx context.Context, review *d
 }
 
 func (repository *CompanyReviewRepository) UpdateDraft(ctx context.Context, review *domain.CompanyReview) (*domain.CompanyReview, error) {
+	return repository.UpdateMutable(ctx, review)
+}
+
+func (repository *CompanyReviewRepository) UpdateMutable(ctx context.Context, review *domain.CompanyReview) (*domain.CompanyReview, error) {
 	if err := review.Validate(); err != nil {
 		return nil, err
 	}
@@ -50,8 +54,10 @@ func (repository *CompanyReviewRepository) UpdateDraft(ctx context.Context, revi
 	document.ObjectID = objectID
 
 	result, err := repository.collection.ReplaceOne(ctx, bson.M{
-		"_id":          objectID,
-		"reviewStatus": domain.ReviewStatusDraft,
+		"_id": objectID,
+		"reviewStatus": bson.M{
+			"$nin": []domain.ReviewStatus{domain.ReviewStatusFinalized, domain.ReviewStatusSuperseded},
+		},
 	}, document)
 	if err != nil {
 		return nil, err
@@ -70,11 +76,13 @@ func (repository *CompanyReviewRepository) Finalize(ctx context.Context, reviewI
 	}
 
 	result, err := repository.collection.UpdateOne(ctx, bson.M{
-		"_id":          objectID,
-		"reviewStatus": domain.ReviewStatusDraft,
+		"_id": objectID,
+		"reviewStatus": bson.M{
+			"$in": []domain.ReviewStatus{domain.ReviewStatusAIValidated, domain.ReviewStatusDraft},
+		},
 	}, bson.M{
 		"$set": mergeUpdatedAt(bson.M{
-			"reviewStatus": domain.ReviewStatusFinal,
+			"reviewStatus": domain.ReviewStatusFinalized,
 		}),
 	})
 	if err != nil {
@@ -129,6 +137,36 @@ func (repository *CompanyReviewRepository) GetLatestByCompany(ctx context.Contex
 			"companyId": companyID,
 			"bookType":  bookType,
 		},
+		options.FindOne().SetSort(bson.D{{Key: "reviewDate", Value: -1}, {Key: "createdAt", Value: -1}}),
+	).Decode(&document); err != nil {
+		if err == mongo.ErrNoDocuments {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	return fromCompanyReviewDocument(&document), nil
+}
+
+func (repository *CompanyReviewRepository) GetLatestComparableByCompany(ctx context.Context, companyID string, bookType domain.BookType, excludeReviewID string) (*domain.CompanyReview, error) {
+	query := bson.M{
+		"companyId": companyID,
+		"bookType":  bookType,
+		"reviewStatus": bson.M{
+			"$in": []domain.ReviewStatus{domain.ReviewStatusAIValidated, domain.ReviewStatusFinalized, domain.ReviewStatusSuperseded},
+		},
+	}
+
+	if excludeReviewID != "" {
+		if objectID, err := parseObjectID(excludeReviewID); err == nil {
+			query["_id"] = bson.M{"$ne": objectID}
+		}
+	}
+
+	var document companyReviewDocument
+	if err := repository.collection.FindOne(
+		ctx,
+		query,
 		options.FindOne().SetSort(bson.D{{Key: "reviewDate", Value: -1}, {Key: "createdAt", Value: -1}}),
 	).Decode(&document); err != nil {
 		if err == mongo.ErrNoDocuments {

@@ -44,16 +44,20 @@ func (config AppConfig) Validate() error {
 
 func validateCollectionNames(collections CollectionConfig) error {
 	values := map[string]string{
-		"companies":             collections.Companies,
-		"companyReviews":        collections.CompanyReviews,
-		"investmentTheses":      collections.InvestmentTheses,
-		"workflowRuns":          collections.WorkflowRuns,
-		"configSnapshots":       collections.ConfigSnapshots,
-		"capitalAllocationRuns": collections.CapitalAllocationRuns,
-		"manualOverrides":       collections.ManualOverrides,
-		"currentPositions":      collections.CurrentPositions,
-		"aiBatchJobs":           collections.AIBatchJobs,
-		"aiBatchIterations":     collections.AIBatchIterations,
+		"companies":               collections.Companies,
+		"companyReviews":          collections.CompanyReviews,
+		"investmentTheses":        collections.InvestmentTheses,
+		"workflowRuns":            collections.WorkflowRuns,
+		"workflowStepRuns":        collections.WorkflowStepRuns,
+		"configSnapshots":         collections.ConfigSnapshots,
+		"capitalAllocationRuns":   collections.CapitalAllocationRuns,
+		"manualOverrides":         collections.ManualOverrides,
+		"currentPositions":        collections.CurrentPositions,
+		"aiBatchJobs":             collections.AIBatchJobs,
+		"aiBatchItems":            collections.AIBatchItems,
+		"jobReconciliationLogs":   collections.JobReconciliationLogs,
+		"providerBatchJobs":       collections.ProviderBatchJobs,
+		"providerBatchIterations": collections.ProviderBatchIterations,
 	}
 
 	for name, value := range values {

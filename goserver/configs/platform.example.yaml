@@ -12,12 +12,16 @@ mongo:
     companyReviews: company_reviews
     investmentTheses: investment_theses
     workflowRuns: workflow_runs
+    workflowStepRuns: workflow_step_runs
     configSnapshots: config_snapshots
     capitalAllocationRuns: capital_allocation_runs
     manualOverrides: manual_overrides
     currentPositions: current_positions
-    aiBatchJobs: query_jobs
-    aiBatchIterations: submissions_iterations
+    aiBatchJobs: ai_batch_jobs
+    aiBatchItems: ai_batch_items
+    jobReconciliationLogs: job_reconciliation_logs
+    providerBatchJobs: query_jobs
+    providerBatchIterations: submissions_iterations
 global:
   schemaVersion: v1alpha1
   defaultTimezone: Asia/Kolkata

@@ -30,6 +30,31 @@ type WorkflowRunListFilter struct {
 	Offset   int
 }
 
+type WorkflowStepRunListFilter struct {
+	WorkflowRunID string
+	Status        domain.WorkflowStepStatusType
+	Limit         int
+	Offset        int
+}
+
+type AIBatchJobListFilter struct {
+	WorkflowRunID string
+	BookType      domain.BookType
+	Status        domain.BatchJobStatus
+	Limit         int
+	Offset        int
+}
+
+type AIBatchItemListFilter struct {
+	AIBatchJobID  string
+	WorkflowRunID string
+	CompanyID     string
+	Status        domain.BatchItemStatus
+	ItemType      domain.BatchItemType
+	Limit         int
+	Offset        int
+}
+
 type CapitalAllocationListFilter struct {
 	BookType domain.BookType
 	Limit    int
@@ -66,11 +91,13 @@ type CompanyRepository interface {
 
 type CompanyReviewRepository interface {
 	Create(ctx context.Context, review *domain.CompanyReview) (*domain.CompanyReview, error)
+	UpdateMutable(ctx context.Context, review *domain.CompanyReview) (*domain.CompanyReview, error)
 	UpdateDraft(ctx context.Context, review *domain.CompanyReview) (*domain.CompanyReview, error)
 	Finalize(ctx context.Context, reviewID string) (*domain.CompanyReview, error)
 	MarkSuperseded(ctx context.Context, reviewID string) (*domain.CompanyReview, error)
 	GetByID(ctx context.Context, id string) (*domain.CompanyReview, error)
 	GetLatestByCompany(ctx context.Context, companyID string, bookType domain.BookType) (*domain.CompanyReview, error)
+	GetLatestComparableByCompany(ctx context.Context, companyID string, bookType domain.BookType, excludeReviewID string) (*domain.CompanyReview, error)
 	List(ctx context.Context, filter CompanyReviewListFilter) ([]*domain.CompanyReview, error)
 }
 
@@ -88,6 +115,35 @@ type WorkflowRunRepository interface {
 	GetByID(ctx context.Context, id string) (*domain.WorkflowRun, error)
 	GetByIdempotencyKey(ctx context.Context, key string) (*domain.WorkflowRun, error)
 	List(ctx context.Context, filter WorkflowRunListFilter) ([]*domain.WorkflowRun, error)
+}
+
+type WorkflowStepRunRepository interface {
+	Create(ctx context.Context, run *domain.WorkflowStepRun) (*domain.WorkflowStepRun, error)
+	Upsert(ctx context.Context, run *domain.WorkflowStepRun) (*domain.WorkflowStepRun, error)
+	GetByID(ctx context.Context, id string) (*domain.WorkflowStepRun, error)
+	GetByWorkflowRunAndStep(ctx context.Context, workflowRunID string, stepName string) (*domain.WorkflowStepRun, error)
+	List(ctx context.Context, filter WorkflowStepRunListFilter) ([]*domain.WorkflowStepRun, error)
+}
+
+type AIBatchJobRepository interface {
+	Create(ctx context.Context, job *domain.AIBatchJob) (*domain.AIBatchJob, error)
+	Update(ctx context.Context, job *domain.AIBatchJob) (*domain.AIBatchJob, error)
+	GetByID(ctx context.Context, id string) (*domain.AIBatchJob, error)
+	GetByIdempotencyKey(ctx context.Context, idempotencyKey string) (*domain.AIBatchJob, error)
+	List(ctx context.Context, filter AIBatchJobListFilter) ([]*domain.AIBatchJob, error)
+}
+
+type AIBatchItemRepository interface {
+	Create(ctx context.Context, item *domain.AIBatchItem) (*domain.AIBatchItem, error)
+	CreateMany(ctx context.Context, items []*domain.AIBatchItem) ([]*domain.AIBatchItem, error)
+	Update(ctx context.Context, item *domain.AIBatchItem) (*domain.AIBatchItem, error)
+	GetByID(ctx context.Context, id string) (*domain.AIBatchItem, error)
+	List(ctx context.Context, filter AIBatchItemListFilter) ([]*domain.AIBatchItem, error)
+}
+
+type JobReconciliationLogRepository interface {
+	Create(ctx context.Context, log *domain.JobReconciliationLog) (*domain.JobReconciliationLog, error)
+	ListByJobID(ctx context.Context, aiBatchJobID string, limit int) ([]*domain.JobReconciliationLog, error)
 }
 
 type ConfigSnapshotRepository interface {

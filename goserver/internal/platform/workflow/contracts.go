@@ -5,28 +5,37 @@ import "goserver/internal/platform/domain"
 type StepName string
 
 const (
-	InvestingStepScanUniverse            StepName = "ScanUniverse"
-	InvestingStepApplyHardFilters        StepName = "ApplyHardFilters"
-	InvestingStepBuildReviewInput        StepName = "BuildReviewInput"
-	InvestingStepGenerateScorecard       StepName = "GenerateScorecard"
-	InvestingStepEvaluateThesisAndChange StepName = "EvaluateThesisAndChange"
-	InvestingStepMapAction               StepName = "MapAction"
-	InvestingStepAssignBucket            StepName = "AssignBucket"
-	InvestingStepBuildCapitalCandidates  StepName = "BuildCapitalCandidates"
-	InvestingStepAllocateCapital         StepName = "AllocateCapital"
-	InvestingStepPersistOutputs          StepName = "PersistOutputs"
-	InvestingStepPublishRunSummary       StepName = "PublishRunSummary"
+	InvestingStepScanUniverse                 StepName = "ScanUniverse"
+	InvestingStepApplyHardFilters             StepName = "ApplyHardFilters"
+	InvestingStepBuildReviewInputs            StepName = "BuildReviewInputs"
+	InvestingStepCreatePendingReviewRecords   StepName = "CreatePendingReviewRecords"
+	InvestingStepCreateBatchJob               StepName = "CreateBatchJob"
+	InvestingStepSubmitBatchJob               StepName = "SubmitBatchJob"
+	InvestingStepWaitForAsyncResults          StepName = "WaitForAsyncResults"
+	InvestingStepPollAndReconcileBatchResults StepName = "PollAndReconcileBatchResults"
+	InvestingStepValidateAIOutputs            StepName = "ValidateAIOutputs"
+	InvestingStepMaterializeFinalReviews      StepName = "MaterializeFinalReviews"
+	InvestingStepEvaluateThesisAndChange      StepName = "EvaluateThesisAndChange"
+	InvestingStepMapActions                   StepName = "MapActions"
+	InvestingStepAssignBuckets                StepName = "AssignBuckets"
+	InvestingStepBuildCapitalCandidates       StepName = "BuildCapitalCandidates"
+	InvestingStepAllocateCapital              StepName = "AllocateCapital"
+	InvestingStepPersistOutputs               StepName = "PersistOutputs"
+	InvestingStepPublishRunSummary            StepName = "PublishRunSummary"
 )
 
 const (
-	TradingStepRefreshUniverse         StepName = "RefreshUniverse"
-	TradingStepEvaluateRegime          StepName = "EvaluateRegime"
-	TradingStepScanSetups              StepName = "ScanSetups"
-	TradingStepValidateRiskRules       StepName = "ValidateRiskRules"
-	TradingStepGenerateTradeCandidates StepName = "GenerateTradeCandidates"
-	TradingStepApproveTradeActions     StepName = "ApproveTradeActions"
-	TradingStepPersistTradingReview    StepName = "PersistTradingReview"
-	TradingStepPublishRunSummary       StepName = "PublishRunSummary"
+	TradingStepRefreshUniverse          StepName = "RefreshUniverse"
+	TradingStepEvaluateRegime           StepName = "EvaluateRegime"
+	TradingStepBuildTradingReviewInputs StepName = "BuildTradingReviewInputs"
+	TradingStepCreateBatchJob           StepName = "CreateBatchJob"
+	TradingStepSubmitBatchJob           StepName = "SubmitBatchJob"
+	TradingStepWaitForAsyncResults      StepName = "WaitForAsyncResults"
+	TradingStepPollAndReconcileResults  StepName = "PollAndReconcileBatchResults"
+	TradingStepValidateAIOutputs        StepName = "ValidateAIOutputs"
+	TradingStepApproveTradeCandidates   StepName = "ApproveTradeCandidates"
+	TradingStepPersistTradingReview     StepName = "PersistTradingReview"
+	TradingStepPublishRunSummary        StepName = "PublishRunSummary"
 )
 
 type ScanUniverseInput struct {
@@ -128,11 +137,17 @@ func InvestingStepNames() []string {
 	return []string{
 		string(InvestingStepScanUniverse),
 		string(InvestingStepApplyHardFilters),
-		string(InvestingStepBuildReviewInput),
-		string(InvestingStepGenerateScorecard),
+		string(InvestingStepBuildReviewInputs),
+		string(InvestingStepCreatePendingReviewRecords),
+		string(InvestingStepCreateBatchJob),
+		string(InvestingStepSubmitBatchJob),
+		string(InvestingStepWaitForAsyncResults),
+		string(InvestingStepPollAndReconcileBatchResults),
+		string(InvestingStepValidateAIOutputs),
+		string(InvestingStepMaterializeFinalReviews),
 		string(InvestingStepEvaluateThesisAndChange),
-		string(InvestingStepMapAction),
-		string(InvestingStepAssignBucket),
+		string(InvestingStepMapActions),
+		string(InvestingStepAssignBuckets),
 		string(InvestingStepBuildCapitalCandidates),
 		string(InvestingStepAllocateCapital),
 		string(InvestingStepPersistOutputs),
@@ -144,10 +159,13 @@ func TradingStepNames() []string {
 	return []string{
 		string(TradingStepRefreshUniverse),
 		string(TradingStepEvaluateRegime),
-		string(TradingStepScanSetups),
-		string(TradingStepValidateRiskRules),
-		string(TradingStepGenerateTradeCandidates),
-		string(TradingStepApproveTradeActions),
+		string(TradingStepBuildTradingReviewInputs),
+		string(TradingStepCreateBatchJob),
+		string(TradingStepSubmitBatchJob),
+		string(TradingStepWaitForAsyncResults),
+		string(TradingStepPollAndReconcileResults),
+		string(TradingStepValidateAIOutputs),
+		string(TradingStepApproveTradeCandidates),
 		string(TradingStepPersistTradingReview),
 		string(TradingStepPublishRunSummary),
 	}

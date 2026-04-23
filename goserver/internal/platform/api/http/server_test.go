@@ -66,6 +66,18 @@ func (workflowServiceStub) GetWorkflowRun(context.Context, string) (*domain.Work
 func (workflowServiceStub) GetWorkflowSummary(context.Context, string) (map[string]any, error) {
 	return map[string]any{"id": "run-1"}, nil
 }
+func (workflowServiceStub) GetWorkflowStatus(context.Context, string) (map[string]any, error) {
+	return map[string]any{"id": "run-1", "status": "waiting_async"}, nil
+}
+func (workflowServiceStub) ListWorkflowSteps(context.Context, string) ([]*domain.WorkflowStepRun, error) {
+	return []*domain.WorkflowStepRun{}, nil
+}
+func (workflowServiceStub) ResumeWorkflow(context.Context, string) (*domain.WorkflowRun, error) {
+	return &domain.WorkflowRun{ID: "run-1", Status: domain.WorkflowRunStatusWaitingAsync}, nil
+}
+func (workflowServiceStub) ReconcileWorkflow(context.Context, string) (*domain.WorkflowRun, error) {
+	return &domain.WorkflowRun{ID: "run-1", Status: domain.WorkflowRunStatusCompleted}, nil
+}
 
 type investingWorkflowServiceStub struct{}
 
@@ -74,6 +86,33 @@ func (investingWorkflowServiceStub) Start(context.Context, ports.StartInvestingW
 }
 func (investingWorkflowServiceStub) DryRun(context.Context, ports.StartInvestingWorkflowRequest) (*domain.WorkflowRun, error) {
 	return &domain.WorkflowRun{ID: "run-2", Status: domain.WorkflowRunStatusCompleted, DryRun: true}, nil
+}
+func (investingWorkflowServiceStub) Resume(context.Context, string) (*domain.WorkflowRun, error) {
+	return &domain.WorkflowRun{ID: "run-1", Status: domain.WorkflowRunStatusWaitingAsync}, nil
+}
+func (investingWorkflowServiceStub) Reconcile(context.Context, string) (*domain.WorkflowRun, error) {
+	return &domain.WorkflowRun{ID: "run-1", Status: domain.WorkflowRunStatusCompleted}, nil
+}
+
+type aiBatchServiceStub struct{}
+
+func (aiBatchServiceStub) ListJobs(context.Context, ports.AIBatchJobListFilter) ([]*domain.AIBatchJob, error) {
+	return []*domain.AIBatchJob{}, nil
+}
+func (aiBatchServiceStub) GetJob(context.Context, string) (*domain.AIBatchJob, error) {
+	return &domain.AIBatchJob{ID: "job-1"}, nil
+}
+func (aiBatchServiceStub) ListItems(context.Context, ports.AIBatchItemListFilter) ([]*domain.AIBatchItem, error) {
+	return []*domain.AIBatchItem{}, nil
+}
+func (aiBatchServiceStub) RetryJob(context.Context, string) (*domain.AIBatchJob, error) {
+	return &domain.AIBatchJob{ID: "job-1", Status: domain.BatchJobStatusCreated}, nil
+}
+func (aiBatchServiceStub) RetryItem(context.Context, string) (*domain.AIBatchItem, error) {
+	return &domain.AIBatchItem{ID: "item-1", Status: domain.BatchItemStatusPending}, nil
+}
+func (aiBatchServiceStub) SkipItem(context.Context, string) (*domain.AIBatchItem, error) {
+	return &domain.AIBatchItem{ID: "item-1", Status: domain.BatchItemStatusSkipped}, nil
 }
 
 type capitalAllocationServiceStub struct{}
@@ -134,6 +173,7 @@ func TestListCompaniesHandler(t *testing.T) {
 		reviewServiceStub{},
 		workflowServiceStub{},
 		investingWorkflowServiceStub{},
+		aiBatchServiceStub{},
 		capitalAllocationServiceStub{},
 		configServiceAPIStub{},
 		overrideServiceStub{},
@@ -155,6 +195,7 @@ func TestCreateOverrideHandler(t *testing.T) {
 		reviewServiceStub{},
 		workflowServiceStub{},
 		investingWorkflowServiceStub{},
+		aiBatchServiceStub{},
 		capitalAllocationServiceStub{},
 		configServiceAPIStub{},
 		overrideServiceStub{},
@@ -184,6 +225,7 @@ var _ ports.CompanyService = companyServiceStub{}
 var _ ports.ReviewService = reviewServiceStub{}
 var _ ports.WorkflowService = workflowServiceStub{}
 var _ ports.InvestingWorkflowService = investingWorkflowServiceStub{}
+var _ ports.AIBatchService = aiBatchServiceStub{}
 var _ ports.CapitalAllocationService = capitalAllocationServiceStub{}
 var _ ports.ConfigService = configServiceAPIStub{}
 var _ ports.ProjectionService = projectionServiceStub{}

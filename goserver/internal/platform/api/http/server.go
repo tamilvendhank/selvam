@@ -20,6 +20,7 @@ type API struct {
 	reviewService            ports.ReviewService
 	workflowService          ports.WorkflowService
 	investingWorkflowService ports.InvestingWorkflowService
+	aiBatchService           ports.AIBatchService
 	capitalAllocationService ports.CapitalAllocationService
 	configService            ports.ConfigService
 	overrideService          ports.OverrideService
@@ -31,6 +32,7 @@ func NewAPI(
 	reviewService ports.ReviewService,
 	workflowService ports.WorkflowService,
 	investingWorkflowService ports.InvestingWorkflowService,
+	aiBatchService ports.AIBatchService,
 	capitalAllocationService ports.CapitalAllocationService,
 	configService ports.ConfigService,
 	overrideService ports.OverrideService,
@@ -41,6 +43,7 @@ func NewAPI(
 		reviewService:            reviewService,
 		workflowService:          workflowService,
 		investingWorkflowService: investingWorkflowService,
+		aiBatchService:           aiBatchService,
 		capitalAllocationService: capitalAllocationService,
 		configService:            configService,
 		overrideService:          overrideService,
@@ -72,12 +75,32 @@ func (api *API) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 		api.listWorkflowRuns(writer, request)
 	case request.Method == http.MethodGet && pathMatches(request.URL.Path, "/api/v1/workflow-runs/", ""):
 		api.getWorkflowRun(writer, request)
+	case request.Method == http.MethodGet && pathMatches(request.URL.Path, "/api/v1/workflow-runs/", "/steps"):
+		api.getWorkflowSteps(writer, request)
+	case request.Method == http.MethodGet && pathMatches(request.URL.Path, "/api/v1/workflow-runs/", "/status"):
+		api.getWorkflowStatus(writer, request)
 	case request.Method == http.MethodGet && pathMatches(request.URL.Path, "/api/v1/workflow-runs/", "/summary"):
 		api.getWorkflowSummary(writer, request)
+	case request.Method == http.MethodPost && pathMatches(request.URL.Path, "/api/v1/workflow-runs/", "/resume"):
+		api.resumeWorkflow(writer, request)
+	case request.Method == http.MethodPost && pathMatches(request.URL.Path, "/api/v1/workflow-runs/", "/reconcile"):
+		api.reconcileWorkflow(writer, request)
 	case request.Method == http.MethodPost && request.URL.Path == "/api/v1/workflow-runs/investing/start":
 		api.startInvestingWorkflow(writer, request, false)
 	case request.Method == http.MethodPost && request.URL.Path == "/api/v1/workflow-runs/investing/dry-run":
 		api.startInvestingWorkflow(writer, request, true)
+	case request.Method == http.MethodGet && request.URL.Path == "/api/v1/ai-batch-jobs":
+		api.listAIBatchJobs(writer, request)
+	case request.Method == http.MethodGet && pathMatches(request.URL.Path, "/api/v1/ai-batch-jobs/", ""):
+		api.getAIBatchJob(writer, request)
+	case request.Method == http.MethodGet && pathMatches(request.URL.Path, "/api/v1/ai-batch-jobs/", "/items"):
+		api.listAIBatchJobItems(writer, request)
+	case request.Method == http.MethodPost && pathMatches(request.URL.Path, "/api/v1/ai-batch-jobs/", "/retry"):
+		api.retryAIBatchJob(writer, request)
+	case request.Method == http.MethodPost && pathMatches(request.URL.Path, "/api/v1/ai-batch-items/", "/retry"):
+		api.retryAIBatchItem(writer, request)
+	case request.Method == http.MethodPost && pathMatches(request.URL.Path, "/api/v1/ai-batch-items/", "/skip"):
+		api.skipAIBatchItem(writer, request)
 	case request.Method == http.MethodGet && request.URL.Path == "/api/v1/capital-allocations":
 		api.listCapitalAllocations(writer, request)
 	case request.Method == http.MethodGet && pathMatches(request.URL.Path, "/api/v1/capital-allocations/", ""):
@@ -284,6 +307,38 @@ func (api *API) getWorkflowRun(writer http.ResponseWriter, request *http.Request
 	api.writeJSON(writer, http.StatusOK, map[string]any{"workflowRun": run})
 }
 
+func (api *API) getWorkflowSteps(writer http.ResponseWriter, request *http.Request) {
+	id, ok := pathParam(request.URL.Path, "/api/v1/workflow-runs/", "/steps")
+	if !ok {
+		http.NotFound(writer, request)
+		return
+	}
+
+	steps, err := api.workflowService.ListWorkflowSteps(request.Context(), id)
+	if err != nil {
+		api.writeError(writer, err)
+		return
+	}
+
+	api.writeJSON(writer, http.StatusOK, map[string]any{"workflowSteps": steps})
+}
+
+func (api *API) getWorkflowStatus(writer http.ResponseWriter, request *http.Request) {
+	id, ok := pathParam(request.URL.Path, "/api/v1/workflow-runs/", "/status")
+	if !ok {
+		http.NotFound(writer, request)
+		return
+	}
+
+	status, err := api.workflowService.GetWorkflowStatus(request.Context(), id)
+	if err != nil {
+		api.writeError(writer, err)
+		return
+	}
+
+	api.writeJSON(writer, http.StatusOK, map[string]any{"status": status})
+}
+
 func (api *API) getWorkflowSummary(writer http.ResponseWriter, request *http.Request) {
 	id, ok := pathParam(request.URL.Path, "/api/v1/workflow-runs/", "/summary")
 	if !ok {
@@ -298,6 +353,38 @@ func (api *API) getWorkflowSummary(writer http.ResponseWriter, request *http.Req
 	}
 
 	api.writeJSON(writer, http.StatusOK, map[string]any{"summary": summary})
+}
+
+func (api *API) resumeWorkflow(writer http.ResponseWriter, request *http.Request) {
+	id, ok := pathParam(request.URL.Path, "/api/v1/workflow-runs/", "/resume")
+	if !ok {
+		http.NotFound(writer, request)
+		return
+	}
+
+	run, err := api.workflowService.ResumeWorkflow(request.Context(), id)
+	if err != nil {
+		api.writeError(writer, err)
+		return
+	}
+
+	api.writeJSON(writer, http.StatusAccepted, map[string]any{"workflowRun": run})
+}
+
+func (api *API) reconcileWorkflow(writer http.ResponseWriter, request *http.Request) {
+	id, ok := pathParam(request.URL.Path, "/api/v1/workflow-runs/", "/reconcile")
+	if !ok {
+		http.NotFound(writer, request)
+		return
+	}
+
+	run, err := api.workflowService.ReconcileWorkflow(request.Context(), id)
+	if err != nil {
+		api.writeError(writer, err)
+		return
+	}
+
+	api.writeJSON(writer, http.StatusAccepted, map[string]any{"workflowRun": run})
 }
 
 func (api *API) startInvestingWorkflow(writer http.ResponseWriter, request *http.Request, dryRun bool) {
@@ -322,7 +409,114 @@ func (api *API) startInvestingWorkflow(writer http.ResponseWriter, request *http
 		return
 	}
 
-	api.writeJSON(writer, http.StatusCreated, map[string]any{"workflowRun": run})
+	api.writeJSON(writer, http.StatusAccepted, map[string]any{
+		"workflowRun":        run,
+		"workflowRunId":      run.ID,
+		"status":             run.Status,
+		"createdBatchJobIds": safeBatchJobIDs(run),
+	})
+}
+
+func (api *API) listAIBatchJobs(writer http.ResponseWriter, request *http.Request) {
+	jobs, err := api.aiBatchService.ListJobs(request.Context(), ports.AIBatchJobListFilter{
+		WorkflowRunID: request.URL.Query().Get("workflow_run_id"),
+		BookType:      domain.BookType(request.URL.Query().Get("book_type")),
+		Status:        domain.BatchJobStatus(request.URL.Query().Get("status")),
+		Limit:         queryInt(request, "limit", 25),
+		Offset:        queryInt(request, "offset", 0),
+	})
+	if err != nil {
+		api.writeError(writer, err)
+		return
+	}
+
+	api.writeJSON(writer, http.StatusOK, map[string]any{"aiBatchJobs": jobs})
+}
+
+func (api *API) getAIBatchJob(writer http.ResponseWriter, request *http.Request) {
+	id, ok := pathParam(request.URL.Path, "/api/v1/ai-batch-jobs/", "")
+	if !ok {
+		http.NotFound(writer, request)
+		return
+	}
+
+	job, err := api.aiBatchService.GetJob(request.Context(), id)
+	if err != nil {
+		api.writeError(writer, err)
+		return
+	}
+
+	api.writeJSON(writer, http.StatusOK, map[string]any{"aiBatchJob": job})
+}
+
+func (api *API) listAIBatchJobItems(writer http.ResponseWriter, request *http.Request) {
+	id, ok := pathParam(request.URL.Path, "/api/v1/ai-batch-jobs/", "/items")
+	if !ok {
+		http.NotFound(writer, request)
+		return
+	}
+
+	items, err := api.aiBatchService.ListItems(request.Context(), ports.AIBatchItemListFilter{
+		AIBatchJobID: id,
+		Status:       domain.BatchItemStatus(request.URL.Query().Get("status")),
+		ItemType:     domain.BatchItemType(request.URL.Query().Get("item_type")),
+		Limit:        queryInt(request, "limit", 100),
+		Offset:       queryInt(request, "offset", 0),
+	})
+	if err != nil {
+		api.writeError(writer, err)
+		return
+	}
+
+	api.writeJSON(writer, http.StatusOK, map[string]any{"aiBatchItems": items})
+}
+
+func (api *API) retryAIBatchJob(writer http.ResponseWriter, request *http.Request) {
+	id, ok := pathParam(request.URL.Path, "/api/v1/ai-batch-jobs/", "/retry")
+	if !ok {
+		http.NotFound(writer, request)
+		return
+	}
+
+	job, err := api.aiBatchService.RetryJob(request.Context(), id)
+	if err != nil {
+		api.writeError(writer, err)
+		return
+	}
+
+	api.writeJSON(writer, http.StatusAccepted, map[string]any{"aiBatchJob": job})
+}
+
+func (api *API) retryAIBatchItem(writer http.ResponseWriter, request *http.Request) {
+	id, ok := pathParam(request.URL.Path, "/api/v1/ai-batch-items/", "/retry")
+	if !ok {
+		http.NotFound(writer, request)
+		return
+	}
+
+	item, err := api.aiBatchService.RetryItem(request.Context(), id)
+	if err != nil {
+		api.writeError(writer, err)
+		return
+	}
+
+	api.writeJSON(writer, http.StatusAccepted, map[string]any{"aiBatchItem": item})
+}
+
+func (api *API) skipAIBatchItem(writer http.ResponseWriter, request *http.Request) {
+	id, ok := pathParam(request.URL.Path, "/api/v1/ai-batch-items/", "/skip")
+	if !ok {
+		http.NotFound(writer, request)
+		return
+	}
+
+	item, err := api.aiBatchService.SkipItem(request.Context(), id)
+	if err != nil {
+		api.writeError(writer, err)
+		return
+	}
+
+	api.writeJSON(writer, http.StatusAccepted, map[string]any{"aiBatchItem": item})
 }
 
 func (api *API) listCapitalAllocations(writer http.ResponseWriter, request *http.Request) {
@@ -497,6 +691,10 @@ func (api *API) writeError(writer http.ResponseWriter, err error) {
 		status = http.StatusNotFound
 	case errors.Is(err, platformservice.ErrImmutableReview):
 		status = http.StatusConflict
+	case errors.Is(err, platformservice.ErrRetryExhausted):
+		status = http.StatusConflict
+	case errors.Is(err, platformservice.ErrValidationFailed):
+		status = http.StatusUnprocessableEntity
 	case errors.Is(err, context.DeadlineExceeded):
 		status = http.StatusGatewayTimeout
 	}
@@ -550,4 +748,15 @@ func queryInt(request *http.Request, name string, fallback int) int {
 	}
 
 	return value
+}
+
+func safeBatchJobIDs(run *domain.WorkflowRun) []string {
+	if run == nil || run.RequestMetadata == nil {
+		return nil
+	}
+	raw, ok := run.RequestMetadata["createdBatchJobIds"].([]string)
+	if ok {
+		return raw
+	}
+	return nil
 }

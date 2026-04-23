@@ -50,7 +50,7 @@ func (service *DefaultReviewService) UpdateDraftReview(ctx context.Context, revi
 		return nil, err
 	}
 
-	updated, err := service.repository.UpdateDraft(ctx, review)
+	updated, err := service.repository.UpdateMutable(ctx, review)
 	if errors.Is(err, mongorepo.ErrImmutableReview) {
 		return nil, ErrImmutableReview
 	}
@@ -112,7 +112,7 @@ func (service *DefaultReviewService) GetReviewEvidence(ctx context.Context, id s
 }
 
 func (service *DefaultReviewService) prepareReview(ctx context.Context, review *domain.CompanyReview) error {
-	previousReview, err := service.repository.GetLatestByCompany(ctx, review.CompanyID, review.BookType)
+	previousReview, err := service.repository.GetLatestComparableByCompany(ctx, review.CompanyID, review.BookType, review.ID)
 	if err != nil {
 		return err
 	}

@@ -80,6 +80,24 @@ func fromWorkflowRunDocument(document *workflowRunDocument) *domain.WorkflowRun 
 	return &run
 }
 
+func toWorkflowStepRunDocument(run *domain.WorkflowStepRun) *workflowStepRunDocument {
+	if run == nil {
+		return nil
+	}
+
+	return &workflowStepRunDocument{WorkflowStepRun: *run}
+}
+
+func fromWorkflowStepRunDocument(document *workflowStepRunDocument) *domain.WorkflowStepRun {
+	if document == nil {
+		return nil
+	}
+
+	run := document.WorkflowStepRun
+	run.ID = document.ObjectID.Hex()
+	return &run
+}
+
 func toConfigSnapshotDocument(snapshot *domain.ConfigSnapshot) *configSnapshotDocument {
 	if snapshot == nil {
 		return nil
@@ -150,6 +168,60 @@ func fromCurrentPositionDocument(document *currentPositionDocument) *domain.Curr
 	position := document.CurrentPosition
 	position.ID = document.ObjectID.Hex()
 	return &position
+}
+
+func toAIBatchJobDocument(job *domain.AIBatchJob) *aiBatchJobDocument {
+	if job == nil {
+		return nil
+	}
+
+	return &aiBatchJobDocument{AIBatchJob: *job}
+}
+
+func fromAIBatchJobDocument(document *aiBatchJobDocument) *domain.AIBatchJob {
+	if document == nil {
+		return nil
+	}
+
+	job := document.AIBatchJob
+	job.ID = document.ObjectID.Hex()
+	return &job
+}
+
+func toAIBatchItemDocument(item *domain.AIBatchItem) *aiBatchItemDocument {
+	if item == nil {
+		return nil
+	}
+
+	return &aiBatchItemDocument{AIBatchItem: *item}
+}
+
+func fromAIBatchItemDocument(document *aiBatchItemDocument) *domain.AIBatchItem {
+	if document == nil {
+		return nil
+	}
+
+	item := document.AIBatchItem
+	item.ID = document.ObjectID.Hex()
+	return &item
+}
+
+func toJobReconciliationLogDocument(log *domain.JobReconciliationLog) *jobReconciliationLogDocument {
+	if log == nil {
+		return nil
+	}
+
+	return &jobReconciliationLogDocument{JobReconciliationLog: *log}
+}
+
+func fromJobReconciliationLogDocument(document *jobReconciliationLogDocument) *domain.JobReconciliationLog {
+	if document == nil {
+		return nil
+	}
+
+	log := document.JobReconciliationLog
+	log.ID = document.ObjectID.Hex()
+	return &log
 }
 
 func newDocumentID() primitive.ObjectID {

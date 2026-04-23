@@ -12,6 +12,7 @@ import (
 	platformai "goserver/internal/platform/provider/ai"
 	mongorepo "goserver/internal/platform/repository/mongo"
 	platformservice "goserver/internal/platform/service"
+	platformworker "goserver/internal/platform/worker"
 	investingworkflow "goserver/internal/platform/workflow/investing"
 	tradingworkflow "goserver/internal/platform/workflow/trading"
 	legacyrepo "goserver/internal/repository"
@@ -46,32 +47,37 @@ func Build(
 	reviewRepository := mongorepo.NewCompanyReviewRepository(collections.CompanyReviews)
 	thesisRepository := mongorepo.NewThesisRepository(collections.InvestmentTheses)
 	workflowRunRepository := mongorepo.NewWorkflowRunRepository(collections.WorkflowRuns)
+	workflowStepRunRepository := mongorepo.NewWorkflowStepRunRepository(collections.WorkflowStepRuns)
 	configSnapshotRepository := mongorepo.NewConfigSnapshotRepository(collections.ConfigSnapshots)
 	capitalAllocationRepository := mongorepo.NewCapitalAllocationRepository(collections.CapitalAllocationRuns)
 	overrideRepository := mongorepo.NewManualOverrideRepository(collections.ManualOverrides)
 	positionRepository := mongorepo.NewPositionRepository(collections.CurrentPositions)
+	aiBatchJobRepository := mongorepo.NewAIBatchJobRepository(collections.AIBatchJobs)
+	aiBatchItemRepository := mongorepo.NewAIBatchItemRepository(collections.AIBatchItems)
+	jobReconciliationLogRepository := mongorepo.NewJobReconciliationLogRepository(collections.JobReconciliationLogs)
 
 	configService := platformservice.NewConfigService(config, configSnapshotRepository, nil)
 	scorecardService := platformservice.NewScorecardService(config)
 	actionMappingService := platformservice.NewActionMappingService(config)
 	changeDetectionService := platformservice.NewChangeDetectionService(config)
+	thesisService := platformservice.NewThesisService(thesisRepository, nil)
 	reviewService := platformservice.NewReviewService(reviewRepository, thesisRepository, actionMappingService, changeDetectionService)
 	companyService := platformservice.NewCompanyService(companyRepository, reviewRepository, thesisRepository, positionRepository)
-	workflowService := platformservice.NewWorkflowService(workflowRunRepository)
 	capitalAllocationService := platformservice.NewCapitalAllocationService(capitalAllocationRepository)
 	overrideService := platformservice.NewOverrideService(overrideRepository, reviewRepository)
 	projectionService := platformservice.NewProjectionService(positionRepository)
+	aiBatchService := platformservice.NewAIBatchService(aiBatchJobRepository, aiBatchItemRepository, reviewRepository)
 
-	var aiReviewEngine = ports.AIReviewEngine(&platformai.NoopAIReviewEngine{})
+	var aiBatchEngine = ports.AIBatchEngine(&platformai.NoopAIBatchEngine{})
 
 	if config.AsyncAI.Enabled && legacyJobsService != nil {
-		legacyJobsRepository := legacyrepo.NewJobsRepository(database, config.Mongo.Collections.AIBatchJobs)
-		aiReviewEngine = platformai.NewLegacyBatchAIReviewEngine(legacyJobsService, legacyJobsRepository)
+		legacyJobsRepository := legacyrepo.NewJobsRepository(database, config.Mongo.Collections.ProviderBatchJobs)
+		aiBatchEngine = platformai.NewLegacyBatchAIReviewEngine(legacyJobsService, legacyJobsRepository)
 	} else if config.AsyncAI.Enabled && config.AsyncAI.APIKey != "" {
 		legacyCfg := legacyconfig.Config{
 			MongoDB: legacyconfig.MongoConfig{
-				JobsCollectionName:             config.Mongo.Collections.AIBatchJobs,
-				SubmissionIterationsCollection: config.Mongo.Collections.AIBatchIterations,
+				JobsCollectionName:             config.Mongo.Collections.ProviderBatchJobs,
+				SubmissionIterationsCollection: config.Mongo.Collections.ProviderBatchIterations,
 			},
 			OpenAI: legacyconfig.OpenAIConfig{
 				APIKey:               config.AsyncAI.APIKey,
@@ -89,32 +95,54 @@ func Build(
 				MaxBatchesPerPass:         config.AsyncAI.Worker.MaxBatchesPerPass,
 			},
 		}
-		legacyJobsRepository := legacyrepo.NewJobsRepository(database, config.Mongo.Collections.AIBatchJobs)
-		legacyIterationsRepository := legacyrepo.NewSubmissionIterationsRepository(database, config.Mongo.Collections.AIBatchIterations)
+		legacyJobsRepository := legacyrepo.NewJobsRepository(database, config.Mongo.Collections.ProviderBatchJobs)
+		legacyIterationsRepository := legacyrepo.NewSubmissionIterationsRepository(database, config.Mongo.Collections.ProviderBatchIterations)
 		legacyOpenAIClient := legacyopenai.NewClient(legacyCfg.OpenAI)
 		legacyJobsService = legacyservice.NewJobsService(legacyCfg, legacyJobsRepository, legacyIterationsRepository, legacyOpenAIClient, &legacyservice.UnconfiguredToolExecutor{})
 		if config.AsyncAI.Worker.Enabled && config.AsyncAI.Worker.RefreshInterval > 0 {
 			legacyservice.NewSubmissionRefreshWorker(legacyJobsService, nil, config.AsyncAI.Worker.RefreshInterval, nil).Start(ctx)
 		}
-		aiReviewEngine = platformai.NewLegacyBatchAIReviewEngine(legacyJobsService, legacyJobsRepository)
+		aiBatchEngine = platformai.NewLegacyBatchAIReviewEngine(legacyJobsService, legacyJobsRepository)
 	}
 
 	investingService := investingworkflow.NewService(
 		config,
 		companyRepository,
+		reviewRepository,
+		thesisRepository,
 		workflowRunRepository,
+		workflowStepRunRepository,
 		configService,
 		scorecardService,
-		aiReviewEngine,
+		actionMappingService,
+		changeDetectionService,
+		thesisService,
+		aiBatchJobRepository,
+		aiBatchItemRepository,
+		jobReconciliationLogRepository,
+		aiBatchEngine,
 		nil,
 	)
 	tradingService := tradingworkflow.NewService(config, workflowRunRepository, configService, nil)
+	workflowService := platformservice.NewWorkflowService(workflowRunRepository, workflowStepRunRepository, investingService, tradingService)
+
+	if config.AsyncAI.Worker.Enabled && config.AsyncAI.Worker.RefreshInterval > 0 {
+		supervisor := platformworker.NewSupervisor(
+			config.AsyncAI.Worker.RefreshInterval,
+			platformworker.NewBatchSubmissionWorker(aiBatchJobRepository, workflowService, config.AsyncAI.Worker.MaxBatchesPerPass),
+			platformworker.NewBatchPollingWorker(aiBatchJobRepository, workflowService, config.AsyncAI.Worker.MaxBatchesPerPass),
+			platformworker.NewResultReconciliationWorker(aiBatchJobRepository, workflowService, config.AsyncAI.Worker.MaxBatchesPerPass),
+			platformworker.NewWorkflowContinuationWorker(workflowRunRepository, workflowService, config.AsyncAI.Worker.MaxBatchesPerPass),
+		)
+		supervisor.Start(ctx)
+	}
 
 	handler := platformhttp.NewAPI(
 		companyService,
 		reviewService,
 		workflowService,
 		investingService,
+		aiBatchService,
 		capitalAllocationService,
 		configService,
 		overrideService,

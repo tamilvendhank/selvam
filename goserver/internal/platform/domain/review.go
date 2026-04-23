@@ -261,6 +261,13 @@ type CompanyReview struct {
 	AIModelName               string            `json:"aiModelName,omitempty" bson:"aiModelName,omitempty"`
 	AIPromptVersion           string            `json:"aiPromptVersion,omitempty" bson:"aiPromptVersion,omitempty"`
 	SchemaVersion             string            `json:"schemaVersion" bson:"schemaVersion"`
+	SourceBatchJobID          string            `json:"sourceBatchJobId,omitempty" bson:"sourceBatchJobId,omitempty"`
+	SourceBatchItemID         string            `json:"sourceBatchItemId,omitempty" bson:"sourceBatchItemId,omitempty"`
+	InputSnapshot             map[string]any    `json:"inputSnapshot,omitempty" bson:"inputSnapshot,omitempty"`
+	InputHash                 string            `json:"inputHash,omitempty" bson:"inputHash,omitempty"`
+	RawAIResultPayload        map[string]any    `json:"rawAiResultPayload,omitempty" bson:"rawAiResultPayload,omitempty"`
+	ValidationStatus          ValidationStatus  `json:"validationStatus,omitempty" bson:"validationStatus,omitempty"`
+	ValidationErrors          []string          `json:"validationErrors,omitempty" bson:"validationErrors,omitempty"`
 	ReviewMetadata            map[string]any    `json:"reviewMetadata,omitempty" bson:"reviewMetadata,omitempty"`
 	Sections                  []SectionScore    `json:"sections" bson:"sections"`
 	DecisionAction            *DecisionAction   `json:"decisionAction,omitempty" bson:"decisionAction,omitempty"`
@@ -319,6 +326,9 @@ func (review *CompanyReview) Validate() error {
 	if !IsValidReviewerType(review.ReviewerType) {
 		return fmt.Errorf("invalid reviewer type %q", review.ReviewerType)
 	}
+	if review.ValidationStatus != "" && !IsValidValidationStatus(review.ValidationStatus) {
+		return fmt.Errorf("invalid review validation status %q", review.ValidationStatus)
+	}
 	if strings.TrimSpace(review.SchemaVersion) == "" {
 		return fmt.Errorf("review schema version is required")
 	}
@@ -335,7 +345,8 @@ func (review *CompanyReview) Validate() error {
 		sectionNames[review.Sections[index].SectionName] = struct{}{}
 		sectionWeightTotal += review.Sections[index].SectionWeight
 	}
-	if review.BookType == BookTypeInvesting && len(review.Sections) != len(InvestingSectionsInOrder) {
+	fullReviewRequired := review.ReviewStatus == ReviewStatusAIValidated || review.ReviewStatus == ReviewStatusFinalized || review.ReviewStatus == ReviewStatusSuperseded
+	if fullReviewRequired && review.BookType == BookTypeInvesting && len(review.Sections) != len(InvestingSectionsInOrder) {
 		return fmt.Errorf("investing reviews must include %d sections", len(InvestingSectionsInOrder))
 	}
 	if len(review.Sections) > 0 && NormalizeScore(sectionWeightTotal) != 100 {
@@ -359,7 +370,16 @@ func (review *CompanyReview) Validate() error {
 }
 
 func (review *CompanyReview) IsMutable() bool {
-	return review != nil && review.ReviewStatus == ReviewStatusDraft
+	if review == nil {
+		return false
+	}
+
+	switch review.ReviewStatus {
+	case ReviewStatusFinalized, ReviewStatusSuperseded:
+		return false
+	default:
+		return true
+	}
 }
 
 func (review *CompanyReview) FlattenEvidence() []EvidenceReference {

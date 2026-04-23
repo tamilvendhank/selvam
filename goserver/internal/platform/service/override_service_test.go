@@ -40,6 +40,9 @@ type reviewRepoStub struct {
 func (stub *reviewRepoStub) Create(context.Context, *domain.CompanyReview) (*domain.CompanyReview, error) {
 	return nil, nil
 }
+func (stub *reviewRepoStub) UpdateMutable(context.Context, *domain.CompanyReview) (*domain.CompanyReview, error) {
+	return nil, nil
+}
 func (stub *reviewRepoStub) UpdateDraft(context.Context, *domain.CompanyReview) (*domain.CompanyReview, error) {
 	return nil, nil
 }
@@ -53,6 +56,9 @@ func (stub *reviewRepoStub) GetByID(_ context.Context, _ string) (*domain.Compan
 	return stub.review, nil
 }
 func (stub *reviewRepoStub) GetLatestByCompany(context.Context, string, domain.BookType) (*domain.CompanyReview, error) {
+	return nil, nil
+}
+func (stub *reviewRepoStub) GetLatestComparableByCompany(context.Context, string, domain.BookType, string) (*domain.CompanyReview, error) {
 	return nil, nil
 }
 func (stub *reviewRepoStub) List(context.Context, ports.CompanyReviewListFilter) ([]*domain.CompanyReview, error) {

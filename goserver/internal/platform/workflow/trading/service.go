@@ -75,6 +75,14 @@ func (service *Service) Start(ctx context.Context, request ports.StartTradingWor
 	return service.workflowRuns.Create(ctx, run)
 }
 
+func (service *Service) Resume(ctx context.Context, workflowRunID string) (*domain.WorkflowRun, error) {
+	return service.workflowRuns.GetByID(ctx, workflowRunID)
+}
+
+func (service *Service) Reconcile(ctx context.Context, workflowRunID string) (*domain.WorkflowRun, error) {
+	return service.workflowRuns.GetByID(ctx, workflowRunID)
+}
+
 func buildTradingSteps(now time.Time) []domain.WorkflowStepStatus {
 	steps := make([]domain.WorkflowStepStatus, 0, len(workflow.TradingStepNames()))
 	for _, name := range workflow.TradingStepNames() {

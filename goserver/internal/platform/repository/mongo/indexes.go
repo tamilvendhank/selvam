@@ -45,6 +45,13 @@ func EnsureIndexes(ctx context.Context, database *mongo.Database, collections pl
 			},
 		},
 		{
+			name: collections.WorkflowStepRuns,
+			models: []mongo.IndexModel{
+				{Keys: bson.D{{Key: "workflowRunId", Value: 1}, {Key: "stepName", Value: 1}}, Options: options.Index().SetUnique(true).SetName("uniq_workflow_step")},
+				{Keys: bson.D{{Key: "workflowRunId", Value: 1}, {Key: "status", Value: 1}}, Options: options.Index().SetName("workflow_run_status")},
+			},
+		},
+		{
 			name: collections.CapitalAllocationRuns,
 			models: []mongo.IndexModel{
 				{Keys: bson.D{{Key: "allocationDate", Value: -1}}, Options: options.Index().SetName("allocation_date_desc")},
@@ -60,6 +67,31 @@ func EnsureIndexes(ctx context.Context, database *mongo.Database, collections pl
 			name: collections.CurrentPositions,
 			models: []mongo.IndexModel{
 				{Keys: bson.D{{Key: "companyId", Value: 1}, {Key: "bookType", Value: 1}}, Options: options.Index().SetUnique(true).SetName("uniq_company_book")},
+			},
+		},
+		{
+			name: collections.AIBatchJobs,
+			models: []mongo.IndexModel{
+				{Keys: bson.D{{Key: "workflowRunId", Value: 1}}, Options: options.Index().SetName("workflow_run_id")},
+				{Keys: bson.D{{Key: "status", Value: 1}}, Options: options.Index().SetName("status")},
+				{Keys: bson.D{{Key: "providerJobHandle", Value: 1}}, Options: options.Index().SetUnique(true).SetSparse(true).SetName("uniq_provider_job_handle")},
+				{Keys: bson.D{{Key: "submittedAt", Value: -1}}, Options: options.Index().SetName("submitted_at_desc")},
+				{Keys: bson.D{{Key: "idempotencyKey", Value: 1}}, Options: options.Index().SetName("idempotency_key")},
+			},
+		},
+		{
+			name: collections.AIBatchItems,
+			models: []mongo.IndexModel{
+				{Keys: bson.D{{Key: "aiBatchJobId", Value: 1}}, Options: options.Index().SetName("ai_batch_job_id")},
+				{Keys: bson.D{{Key: "workflowRunId", Value: 1}, {Key: "companyId", Value: 1}}, Options: options.Index().SetName("workflow_company")},
+				{Keys: bson.D{{Key: "status", Value: 1}}, Options: options.Index().SetName("status")},
+				{Keys: bson.D{{Key: "companyId", Value: 1}, {Key: "itemType", Value: 1}, {Key: "createdAt", Value: -1}}, Options: options.Index().SetName("company_item_created_desc")},
+			},
+		},
+		{
+			name: collections.JobReconciliationLogs,
+			models: []mongo.IndexModel{
+				{Keys: bson.D{{Key: "aiBatchJobId", Value: 1}, {Key: "polledAt", Value: -1}}, Options: options.Index().SetName("ai_batch_job_polled_desc")},
 			},
 		},
 	}

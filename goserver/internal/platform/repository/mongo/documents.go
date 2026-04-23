@@ -26,6 +26,11 @@ type workflowRunDocument struct {
 	domain.WorkflowRun `bson:",inline"`
 }
 
+type workflowStepRunDocument struct {
+	ObjectID               primitive.ObjectID `bson:"_id,omitempty"`
+	domain.WorkflowStepRun `bson:",inline"`
+}
+
 type configSnapshotDocument struct {
 	ObjectID              primitive.ObjectID `bson:"_id,omitempty"`
 	domain.ConfigSnapshot `bson:",inline"`
@@ -44,4 +49,19 @@ type manualOverrideDocument struct {
 type currentPositionDocument struct {
 	ObjectID               primitive.ObjectID `bson:"_id,omitempty"`
 	domain.CurrentPosition `bson:",inline"`
+}
+
+type aiBatchJobDocument struct {
+	ObjectID          primitive.ObjectID `bson:"_id,omitempty"`
+	domain.AIBatchJob `bson:",inline"`
+}
+
+type aiBatchItemDocument struct {
+	ObjectID           primitive.ObjectID `bson:"_id,omitempty"`
+	domain.AIBatchItem `bson:",inline"`
+}
+
+type jobReconciliationLogDocument struct {
+	ObjectID                    primitive.ObjectID `bson:"_id,omitempty"`
+	domain.JobReconciliationLog `bson:",inline"`
 }

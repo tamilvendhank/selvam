@@ -19,10 +19,14 @@ type Collections struct {
 	CompanyReviews        *mongo.Collection
 	InvestmentTheses      *mongo.Collection
 	WorkflowRuns          *mongo.Collection
+	WorkflowStepRuns      *mongo.Collection
 	ConfigSnapshots       *mongo.Collection
 	CapitalAllocationRuns *mongo.Collection
 	ManualOverrides       *mongo.Collection
 	CurrentPositions      *mongo.Collection
+	AIBatchJobs           *mongo.Collection
+	AIBatchItems          *mongo.Collection
+	JobReconciliationLogs *mongo.Collection
 }
 
 func NewCollections(database *mongo.Database, names platformconfig.CollectionConfig) Collections {
@@ -31,10 +35,14 @@ func NewCollections(database *mongo.Database, names platformconfig.CollectionCon
 		CompanyReviews:        database.Collection(names.CompanyReviews),
 		InvestmentTheses:      database.Collection(names.InvestmentTheses),
 		WorkflowRuns:          database.Collection(names.WorkflowRuns),
+		WorkflowStepRuns:      database.Collection(names.WorkflowStepRuns),
 		ConfigSnapshots:       database.Collection(names.ConfigSnapshots),
 		CapitalAllocationRuns: database.Collection(names.CapitalAllocationRuns),
 		ManualOverrides:       database.Collection(names.ManualOverrides),
 		CurrentPositions:      database.Collection(names.CurrentPositions),
+		AIBatchJobs:           database.Collection(names.AIBatchJobs),
+		AIBatchItems:          database.Collection(names.AIBatchItems),
+		JobReconciliationLogs: database.Collection(names.JobReconciliationLogs),
 	}
 }
 

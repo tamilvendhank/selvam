@@ -47,15 +47,23 @@ type WorkflowService interface {
 	ListWorkflowRuns(ctx context.Context, filter WorkflowRunListFilter) ([]*domain.WorkflowRun, error)
 	GetWorkflowRun(ctx context.Context, id string) (*domain.WorkflowRun, error)
 	GetWorkflowSummary(ctx context.Context, id string) (map[string]any, error)
+	GetWorkflowStatus(ctx context.Context, id string) (map[string]any, error)
+	ListWorkflowSteps(ctx context.Context, workflowRunID string) ([]*domain.WorkflowStepRun, error)
+	ResumeWorkflow(ctx context.Context, id string) (*domain.WorkflowRun, error)
+	ReconcileWorkflow(ctx context.Context, id string) (*domain.WorkflowRun, error)
 }
 
 type InvestingWorkflowService interface {
 	Start(ctx context.Context, request StartInvestingWorkflowRequest) (*domain.WorkflowRun, error)
 	DryRun(ctx context.Context, request StartInvestingWorkflowRequest) (*domain.WorkflowRun, error)
+	Resume(ctx context.Context, workflowRunID string) (*domain.WorkflowRun, error)
+	Reconcile(ctx context.Context, workflowRunID string) (*domain.WorkflowRun, error)
 }
 
 type TradingWorkflowService interface {
 	Start(ctx context.Context, request StartTradingWorkflowRequest) (*domain.WorkflowRun, error)
+	Resume(ctx context.Context, workflowRunID string) (*domain.WorkflowRun, error)
+	Reconcile(ctx context.Context, workflowRunID string) (*domain.WorkflowRun, error)
 }
 
 type CapitalAllocationService interface {
@@ -81,4 +89,13 @@ type ProjectionService interface {
 	ListPositions(ctx context.Context, filter PositionListFilter) ([]*domain.CurrentPosition, error)
 	GetPositionByCompanyAndBook(ctx context.Context, companyID string, bookType domain.BookType) (*domain.CurrentPosition, error)
 	UpsertPosition(ctx context.Context, position *domain.CurrentPosition) (*domain.CurrentPosition, error)
+}
+
+type AIBatchService interface {
+	ListJobs(ctx context.Context, filter AIBatchJobListFilter) ([]*domain.AIBatchJob, error)
+	GetJob(ctx context.Context, id string) (*domain.AIBatchJob, error)
+	ListItems(ctx context.Context, filter AIBatchItemListFilter) ([]*domain.AIBatchItem, error)
+	RetryJob(ctx context.Context, id string) (*domain.AIBatchJob, error)
+	RetryItem(ctx context.Context, id string) (*domain.AIBatchItem, error)
+	SkipItem(ctx context.Context, id string) (*domain.AIBatchItem, error)
 }

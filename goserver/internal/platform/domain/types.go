@@ -30,9 +30,15 @@ const (
 type ReviewStatus string
 
 const (
-	ReviewStatusDraft      ReviewStatus = "draft"
-	ReviewStatusFinal      ReviewStatus = "final"
-	ReviewStatusSuperseded ReviewStatus = "superseded"
+	ReviewStatusPendingInput           ReviewStatus = "pending_input"
+	ReviewStatusPendingAI              ReviewStatus = "pending_ai"
+	ReviewStatusAICompletedUnvalidated ReviewStatus = "ai_completed_unvalidated"
+	ReviewStatusValidationFailed       ReviewStatus = "validation_failed"
+	ReviewStatusAIValidated            ReviewStatus = "ai_validated"
+	ReviewStatusFinalized              ReviewStatus = "finalized"
+	ReviewStatusSuperseded             ReviewStatus = "superseded"
+	ReviewStatusDraft                  ReviewStatus = ReviewStatusPendingInput
+	ReviewStatusFinal                  ReviewStatus = ReviewStatusFinalized
 )
 
 type InvestingMode string
@@ -166,12 +172,13 @@ const (
 type WorkflowStepStatusType string
 
 const (
-	WorkflowStepStatusPending      WorkflowStepStatusType = "pending"
-	WorkflowStepStatusRunning      WorkflowStepStatusType = "running"
-	WorkflowStepStatusWaitingAsync WorkflowStepStatusType = "waiting_async"
-	WorkflowStepStatusCompleted    WorkflowStepStatusType = "completed"
-	WorkflowStepStatusFailed       WorkflowStepStatusType = "failed"
-	WorkflowStepStatusSkipped      WorkflowStepStatusType = "skipped"
+	WorkflowStepStatusPending         WorkflowStepStatusType = "pending"
+	WorkflowStepStatusRunning         WorkflowStepStatusType = "running"
+	WorkflowStepStatusWaitingAsync    WorkflowStepStatusType = "waiting_async"
+	WorkflowStepStatusWaitingExternal WorkflowStepStatusType = "waiting_external"
+	WorkflowStepStatusCompleted       WorkflowStepStatusType = "completed"
+	WorkflowStepStatusFailed          WorkflowStepStatusType = "failed"
+	WorkflowStepStatusSkipped         WorkflowStepStatusType = "skipped"
 )
 
 type AsyncTaskStatus string
@@ -183,6 +190,59 @@ const (
 	AsyncTaskStatusCompleted   AsyncTaskStatus = "completed"
 	AsyncTaskStatusFailed      AsyncTaskStatus = "failed"
 	AsyncTaskStatusUnavailable AsyncTaskStatus = "unavailable"
+)
+
+type BatchJobType string
+
+const (
+	BatchJobTypeInvestingReview BatchJobType = "investing_review_batch"
+	BatchJobTypeThesisUpdate    BatchJobType = "thesis_update_batch"
+	BatchJobTypeChangeDetection BatchJobType = "change_detection_batch"
+	BatchJobTypeEvidenceSummary BatchJobType = "evidence_summary_batch"
+	BatchJobTypeTradingReview   BatchJobType = "trading_review_batch"
+)
+
+type BatchJobStatus string
+
+const (
+	BatchJobStatusCreated            BatchJobStatus = "created"
+	BatchJobStatusSubmitted          BatchJobStatus = "submitted"
+	BatchJobStatusRunning            BatchJobStatus = "running"
+	BatchJobStatusPartiallyCompleted BatchJobStatus = "partially_completed"
+	BatchJobStatusCompleted          BatchJobStatus = "completed"
+	BatchJobStatusFailed             BatchJobStatus = "failed"
+	BatchJobStatusCancelled          BatchJobStatus = "cancelled"
+	BatchJobStatusTimedOut           BatchJobStatus = "timed_out"
+)
+
+type BatchItemType string
+
+const (
+	BatchItemTypeCompanyReview          BatchItemType = "company_review"
+	BatchItemTypeThesisUpdate           BatchItemType = "thesis_update"
+	BatchItemTypeChangeSummary          BatchItemType = "change_summary"
+	BatchItemTypeEvidenceSummary        BatchItemType = "evidence_summary"
+	BatchItemTypeTradingCandidateReview BatchItemType = "trading_candidate_review"
+)
+
+type BatchItemStatus string
+
+const (
+	BatchItemStatusPending       BatchItemStatus = "pending"
+	BatchItemStatusSubmitted     BatchItemStatus = "submitted"
+	BatchItemStatusProcessing    BatchItemStatus = "processing"
+	BatchItemStatusCompleted     BatchItemStatus = "completed"
+	BatchItemStatusFailed        BatchItemStatus = "failed"
+	BatchItemStatusInvalidOutput BatchItemStatus = "invalid_output"
+	BatchItemStatusSkipped       BatchItemStatus = "skipped"
+)
+
+type ValidationStatus string
+
+const (
+	ValidationStatusNotValidated ValidationStatus = "not_validated"
+	ValidationStatusValid        ValidationStatus = "valid"
+	ValidationStatusInvalid      ValidationStatus = "invalid"
 )
 
 type InvestingSectionName string
@@ -309,7 +369,13 @@ func IsValidSectionActionCap(value SectionActionCap) bool {
 
 func IsValidReviewStatus(value ReviewStatus) bool {
 	switch value {
-	case ReviewStatusDraft, ReviewStatusFinal, ReviewStatusSuperseded:
+	case ReviewStatusPendingInput,
+		ReviewStatusPendingAI,
+		ReviewStatusAICompletedUnvalidated,
+		ReviewStatusValidationFailed,
+		ReviewStatusAIValidated,
+		ReviewStatusFinalized,
+		ReviewStatusSuperseded:
 		return true
 	default:
 		return false
@@ -435,6 +501,7 @@ func IsValidWorkflowStepStatus(value WorkflowStepStatusType) bool {
 	case WorkflowStepStatusPending,
 		WorkflowStepStatusRunning,
 		WorkflowStepStatusWaitingAsync,
+		WorkflowStepStatusWaitingExternal,
 		WorkflowStepStatusCompleted,
 		WorkflowStepStatusFailed,
 		WorkflowStepStatusSkipped:
@@ -447,6 +514,72 @@ func IsValidWorkflowStepStatus(value WorkflowStepStatusType) bool {
 func IsValidAsyncTaskStatus(value AsyncTaskStatus) bool {
 	switch value {
 	case AsyncTaskStatusPending, AsyncTaskStatusQueued, AsyncTaskStatusInProgress, AsyncTaskStatusCompleted, AsyncTaskStatusFailed, AsyncTaskStatusUnavailable:
+		return true
+	default:
+		return false
+	}
+}
+
+func IsValidBatchJobType(value BatchJobType) bool {
+	switch value {
+	case BatchJobTypeInvestingReview,
+		BatchJobTypeThesisUpdate,
+		BatchJobTypeChangeDetection,
+		BatchJobTypeEvidenceSummary,
+		BatchJobTypeTradingReview:
+		return true
+	default:
+		return false
+	}
+}
+
+func IsValidBatchJobStatus(value BatchJobStatus) bool {
+	switch value {
+	case BatchJobStatusCreated,
+		BatchJobStatusSubmitted,
+		BatchJobStatusRunning,
+		BatchJobStatusPartiallyCompleted,
+		BatchJobStatusCompleted,
+		BatchJobStatusFailed,
+		BatchJobStatusCancelled,
+		BatchJobStatusTimedOut:
+		return true
+	default:
+		return false
+	}
+}
+
+func IsValidBatchItemType(value BatchItemType) bool {
+	switch value {
+	case BatchItemTypeCompanyReview,
+		BatchItemTypeThesisUpdate,
+		BatchItemTypeChangeSummary,
+		BatchItemTypeEvidenceSummary,
+		BatchItemTypeTradingCandidateReview:
+		return true
+	default:
+		return false
+	}
+}
+
+func IsValidBatchItemStatus(value BatchItemStatus) bool {
+	switch value {
+	case BatchItemStatusPending,
+		BatchItemStatusSubmitted,
+		BatchItemStatusProcessing,
+		BatchItemStatusCompleted,
+		BatchItemStatusFailed,
+		BatchItemStatusInvalidOutput,
+		BatchItemStatusSkipped:
+		return true
+	default:
+		return false
+	}
+}
+
+func IsValidValidationStatus(value ValidationStatus) bool {
+	switch value {
+	case ValidationStatusNotValidated, ValidationStatusValid, ValidationStatusInvalid:
 		return true
 	default:
 		return false

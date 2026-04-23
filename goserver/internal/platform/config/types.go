@@ -27,16 +27,20 @@ type MongoConfig struct {
 }
 
 type CollectionConfig struct {
-	Companies             string `json:"companies" yaml:"companies"`
-	CompanyReviews        string `json:"companyReviews" yaml:"companyReviews"`
-	InvestmentTheses      string `json:"investmentTheses" yaml:"investmentTheses"`
-	WorkflowRuns          string `json:"workflowRuns" yaml:"workflowRuns"`
-	ConfigSnapshots       string `json:"configSnapshots" yaml:"configSnapshots"`
-	CapitalAllocationRuns string `json:"capitalAllocationRuns" yaml:"capitalAllocationRuns"`
-	ManualOverrides       string `json:"manualOverrides" yaml:"manualOverrides"`
-	CurrentPositions      string `json:"currentPositions" yaml:"currentPositions"`
-	AIBatchJobs           string `json:"aiBatchJobs" yaml:"aiBatchJobs"`
-	AIBatchIterations     string `json:"aiBatchIterations" yaml:"aiBatchIterations"`
+	Companies               string `json:"companies" yaml:"companies"`
+	CompanyReviews          string `json:"companyReviews" yaml:"companyReviews"`
+	InvestmentTheses        string `json:"investmentTheses" yaml:"investmentTheses"`
+	WorkflowRuns            string `json:"workflowRuns" yaml:"workflowRuns"`
+	WorkflowStepRuns        string `json:"workflowStepRuns" yaml:"workflowStepRuns"`
+	ConfigSnapshots         string `json:"configSnapshots" yaml:"configSnapshots"`
+	CapitalAllocationRuns   string `json:"capitalAllocationRuns" yaml:"capitalAllocationRuns"`
+	ManualOverrides         string `json:"manualOverrides" yaml:"manualOverrides"`
+	CurrentPositions        string `json:"currentPositions" yaml:"currentPositions"`
+	AIBatchJobs             string `json:"aiBatchJobs" yaml:"aiBatchJobs"`
+	AIBatchItems            string `json:"aiBatchItems" yaml:"aiBatchItems"`
+	JobReconciliationLogs   string `json:"jobReconciliationLogs" yaml:"jobReconciliationLogs"`
+	ProviderBatchJobs       string `json:"providerBatchJobs" yaml:"providerBatchJobs"`
+	ProviderBatchIterations string `json:"providerBatchIterations" yaml:"providerBatchIterations"`
 }
 
 type GlobalConfig struct {
