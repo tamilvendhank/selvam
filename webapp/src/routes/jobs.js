@@ -329,6 +329,66 @@ router.get("/procedure-executions/:id", (req, res) => {
   res.render("index");
 });
 
+router.get("/platform", (req, res) => {
+  res.render("index");
+});
+
+router.get("/platform/companies", (req, res) => {
+  res.render("index");
+});
+
+router.get("/platform/companies/:id", (req, res) => {
+  res.render("index");
+});
+
+router.get("/platform/reviews", (req, res) => {
+  res.render("index");
+});
+
+router.get("/platform/reviews/:id", (req, res) => {
+  res.render("index");
+});
+
+router.get("/platform/workflow-runs", (req, res) => {
+  res.render("index");
+});
+
+router.get("/platform/workflow-runs/:id", (req, res) => {
+  res.render("index");
+});
+
+router.get("/platform/ai-batch-jobs", (req, res) => {
+  res.render("index");
+});
+
+router.get("/platform/ai-batch-jobs/:id", (req, res) => {
+  res.render("index");
+});
+
+router.get("/platform/capital-allocations", (req, res) => {
+  res.render("index");
+});
+
+router.get("/platform/capital-allocations/:id", (req, res) => {
+  res.render("index");
+});
+
+router.get("/platform/positions", (req, res) => {
+  res.render("index");
+});
+
+router.get("/platform/config", (req, res) => {
+  res.render("index");
+});
+
+router.get("/platform/config/snapshots/:id", (req, res) => {
+  res.render("index");
+});
+
+router.get("/platform/overrides", (req, res) => {
+  res.render("index");
+});
+
 router.get("/jobs", (req, res) => {
   res.redirect(302, "/submissions");
 });
