@@ -1,0 +1,58 @@
+{
+  "bookType": "investing",
+  "runType": "monthly_scan",
+  "mode": "balanced",
+  "status": "waiting_async",
+  "startedAt": "2026-04-23T06:30:00Z",
+  "configSnapshotId": "507f1f77bcf86cd799439031",
+  "companiesScannedCount": 42,
+  "reviewsCreatedCount": 0,
+  "errorsCount": 0,
+  "dryRun": false,
+  "idempotencyKey": "2026-04-monthly-investing",
+  "notes": "Monthly scheduled foundation run.",
+  "requestMetadata": {
+    "requestedBy": "system"
+  },
+  "stepStatuses": [
+    {
+      "stepName": "ScanUniverse",
+      "status": "completed",
+      "startedAt": "2026-04-23T06:30:00Z",
+      "completedAt": "2026-04-23T06:30:01Z",
+      "inputSnapshot": {
+        "bookType": "investing"
+      },
+      "outputSnapshot": {
+        "count": 42
+      }
+    },
+    {
+      "stepName": "GenerateScorecard",
+      "status": "waiting_async",
+      "startedAt": "2026-04-23T06:30:05Z",
+      "inputSnapshot": {
+        "configSnapshotId": "507f1f77bcf86cd799439031"
+      },
+      "outputSnapshot": {
+        "asyncOnly": true
+      },
+      "asyncTask": {
+        "provider": "openai-batch",
+        "taskKind": "review_batch",
+        "localObjectType": "submission",
+        "localObjectId": "submission-2026-04-23-a",
+        "submissionId": "submission-2026-04-23-a",
+        "representativeJobId": "507f1f77bcf86cd799439061",
+        "batchId": "batch_123",
+        "jobIds": ["507f1f77bcf86cd799439061", "507f1f77bcf86cd799439062"],
+        "status": "queued",
+        "resultAvailable": false,
+        "submittedAt": "2026-04-23T06:30:05Z"
+      }
+    }
+  ],
+  "schemaVersion": "v1alpha1",
+  "createdAt": "2026-04-23T06:30:00Z",
+  "updatedAt": "2026-04-23T06:30:05Z"
+}

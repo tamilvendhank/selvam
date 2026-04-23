@@ -1,0 +1,202 @@
+schemaVersion: v1alpha1
+environment: development
+server:
+  port: 8080
+  readHeaderTimeout: 10s
+mongo:
+  uri: mongodb://127.0.0.1:27017
+  database: selvam_platform
+  collections:
+    companies: companies
+    companyReviews: company_reviews
+    investmentTheses: investment_theses
+    workflowRuns: workflow_runs
+    configSnapshots: config_snapshots
+    capitalAllocationRuns: capital_allocation_runs
+    manualOverrides: manual_overrides
+    currentPositions: current_positions
+    aiBatchJobs: query_jobs
+    aiBatchIterations: submissions_iterations
+global:
+  schemaVersion: v1alpha1
+  defaultTimezone: Asia/Kolkata
+  dataSources:
+    financialDataProvider: placeholder-financials
+    priceDataProvider: placeholder-prices
+    textDocumentProvider: placeholder-textdocs
+  aiProviders:
+    defaultProvider: openai-batch
+    defaultModel: gpt-5.4-mini
+    reviewPromptVersion: investing-review-v1
+    batchEnabled: true
+  featureFlags:
+    enableAsyncAiReview: true
+    enableCurrentPositionProjection: true
+    enableTradingWorkflow: true
+investing:
+  defaultMode: balanced
+  sectionWeights:
+    - { name: "Investability", weight: 5 }
+    - { name: "Business Traction", weight: 15 }
+    - { name: "Profit Conversion", weight: 13 }
+    - { name: "Capital Efficiency / Financial Strength", weight: 16 }
+    - { name: "Structural Sector Attractiveness", weight: 6 }
+    - { name: "Runway / Industry Positioning", weight: 13 }
+    - { name: "Management / Governance", weight: 16 }
+    - { name: "Market Confirmation", weight: 6 }
+    - { name: "Valuation / Entry Attractiveness", weight: 10 }
+  subScoreWeights:
+    - sectionName: "Investability"
+      subScores:
+        - { name: "Liquidity", weight: 40 }
+        - { name: "Data quality / completeness", weight: 25 }
+        - { name: "Basic investability suitability", weight: 20 }
+        - { name: "Listing / operating history sufficiency", weight: 15 }
+    - sectionName: "Business Traction"
+      subScores:
+        - { name: "Revenue growth strength", weight: 30 }
+        - { name: "Revenue growth consistency", weight: 25 }
+        - { name: "Recent 12-quarter acceleration / deterioration", weight: 25 }
+        - { name: "Evidence of expanding demand", weight: 20 }
+    - sectionName: "Profit Conversion"
+      subScores:
+        - { name: "Operating margin quality / trend", weight: 30 }
+        - { name: "Profit growth strength", weight: 25 }
+        - { name: "Cash conversion quality", weight: 30 }
+        - { name: "Recent operating leverage / margin direction", weight: 15 }
+    - sectionName: "Capital Efficiency / Financial Strength"
+      subScores:
+        - { name: "ROCE / ROIC quality", weight: 35 }
+        - { name: "Balance-sheet strength", weight: 30 }
+        - { name: "Working-capital efficiency", weight: 20 }
+        - { name: "Dilution / capital-allocation discipline", weight: 15 }
+    - sectionName: "Structural Sector Attractiveness"
+      subScores:
+        - { name: "Demand tailwind strength", weight: 35 }
+        - { name: "Industry economics quality", weight: 30 }
+        - { name: "Policy / formalization support", weight: 20 }
+        - { name: "Cyclicality risk", weight: 15 }
+    - sectionName: "Runway / Industry Positioning"
+      subScores:
+        - { name: "Market opportunity size", weight: 30 }
+        - { name: "Share-gain potential", weight: 30 }
+        - { name: "Expansion optionality", weight: 20 }
+        - { name: "Competitive positioning strength", weight: 20 }
+    - sectionName: "Management / Governance"
+      subScores:
+        - { name: "Capital allocation quality", weight: 30 }
+        - { name: "Execution consistency", weight: 30 }
+        - { name: "Shareholder alignment / trustworthiness", weight: 25 }
+        - { name: "Disclosure quality", weight: 15 }
+    - sectionName: "Market Confirmation"
+      subScores:
+        - { name: "Relative strength", weight: 35 }
+        - { name: "Trend quality", weight: 30 }
+        - { name: "Drawdown / resilience behavior", weight: 20 }
+        - { name: "Reaction to results / news", weight: 15 }
+    - sectionName: "Valuation / Entry Attractiveness"
+      subScores:
+        - { name: "Historical valuation attractiveness", weight: 35 }
+        - { name: "Valuation support vs current quality", weight: 30 }
+        - { name: "Overvaluation risk", weight: 20 }
+        - { name: "Entry timing suitability", weight: 15 }
+  hardGateRules:
+    - name: governance_red_flag_absence
+      description: Governance red-flag absence is mandatory.
+      failureAction: reject
+  actionThresholds:
+    exceptionalMin: 8.5
+    strongMin: 7.5
+    acceptableMin: 6.5
+    weakMin: 5.5
+    buyMinOverall: 7.5
+    holdMinOverall: 7.0
+    rejectBelowOverall: 6.0
+    sellBelowOverall: 5.5
+    buyMinManagement: 7.0
+    buyMinCapitalEfficiency: 7.0
+    buyMinValuation: 6.0
+    coreStrongThreshold: 7.0
+    coreWeakThreshold: 6.5
+    maxWeakCoreSectionsForBuy: 1
+    minStrongCoreSectionsForBuy: 3
+    exitReviewTotalDrop: 1.0
+    exitReviewCoreDrop: 1.5
+    exitReviewManagementDrop: 1.0
+  valuationRules:
+    useOwnHistoryOnly: true
+    extremeOvervaluationAction: cannot_buy
+    metrics: ["P/E", "EV/EBITDA", "P/B", "Price/Sales", "Free Cash Flow Yield"]
+  reviewCadenceByBucket:
+    - { bucket: research, reviewEveryDays: 30 }
+    - { bucket: watch, reviewEveryDays: 30 }
+    - { bucket: buy_ready, reviewEveryDays: 30 }
+    - { bucket: hold, reviewEveryDays: 30 }
+    - { bucket: exit_review, reviewEveryDays: 7 }
+  positionSizing:
+    dynamicSizing: true
+    minMeaningfulTargetPct: 3
+    maxPositionCapPct: 10
+  allocation:
+    portfolioTargetSplit:
+      investingBookPct: 70
+      tradingBookPct: 20
+      liquidReservePct: 10
+    defaultTrancheCount: 3
+    allowPartialTrim: true
+  thesisRules:
+    requireWrittenThesisForBuy: true
+    sellOnThesisBreak: true
+  watchlistBuckets: [research, watch, buy_ready, hold, exit_review]
+  coreSections:
+    - "Business Traction"
+    - "Profit Conversion"
+    - "Capital Efficiency / Financial Strength"
+    - "Runway / Industry Positioning"
+    - "Management / Governance"
+trading:
+  universe:
+    requireLiquidityOnly: true
+    allowedInstruments: [equity, etf]
+  regimeFilter:
+    useTrend: true
+    useBreadth: true
+    useVolatility: true
+  riskPerTradePct: 1
+  maxConcurrentPositions: 6
+  stopStyle: volatility_based
+  trailingStop:
+    mode: atr_trailing
+    atrMultiple: 2.5
+  drawdownKillSwitch:
+    stopOpeningNewTradesDrawdownPct: 10
+    cooldownDays: 28
+ui:
+  defaultPageSize: 25
+  maxPageSize: 100
+  defaultSort: -updatedAt
+  featureToggles:
+    companyHistorySummary: true
+    reviewDiff: true
+    configInspection: true
+  reviewDetailRenderingHints:
+    - sections
+    - decisionAction
+    - changeLog
+    - positionSnapshot
+asyncAi:
+  enabled: true
+  provider: openai-batch
+  model: gpt-5.4-mini
+  promptVersion: investing-review-v1
+  responseInstructions: Return structured JSON only.
+  batchEndpoint: /v1/responses
+  completionWindow: 24h
+  baseUrl: https://api.openai.com
+  apiKey: ""
+  worker:
+    enabled: true
+    refreshInterval: 15s
+    minBatchRefreshAge: 30s
+    followUpClaimTimeout: 2m
+    maxBatchesPerPass: 20

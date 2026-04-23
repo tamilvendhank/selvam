@@ -1,0 +1,137 @@
+{
+  "companyId": "507f1f77bcf86cd799439011",
+  "symbol": "INFY",
+  "bookType": "investing",
+  "reviewDate": "2026-04-23T00:00:00Z",
+  "reviewPeriodType": "monthly",
+  "workflowRunId": "507f1f77bcf86cd799439051",
+  "configSnapshotId": "507f1f77bcf86cd799439031",
+  "reviewStatus": "final",
+  "mode": "balanced",
+  "ownedBeforeReview": true,
+  "currentBucketBeforeReview": "hold",
+  "currentActionBeforeReview": "hold",
+  "weightedTotalScore": 8.1,
+  "hardGateFailed": false,
+  "hardGateFailureReasons": [],
+  "confidenceScore": 0.82,
+  "finalBucketAfterReview": "hold",
+  "finalActionAfterReview": "hold",
+  "actionRationaleSummary": "Core sections remain strong and thesis stays intact.",
+  "whatChangedSummary": "Delivery execution improved while valuation stayed fair.",
+  "reviewerType": "hybrid",
+  "aiModelName": "gpt-5.4-mini",
+  "aiPromptVersion": "investing-review-v1",
+  "schemaVersion": "v1alpha1",
+  "decisionAction": {
+    "actionType": "hold",
+    "bucketAfterAction": "hold",
+    "actionPriorityRank": 2,
+    "actionReasonPrimary": "Owned position remains above HOLD thresholds.",
+    "capitalEligible": false,
+    "capitalPriorityScore": 0,
+    "recommendedPositionTargetPct": 5,
+    "recommendedPositionCapPct": 10,
+    "recommendedTrancheStyle": "pause"
+  },
+  "sections": [
+    {
+      "sectionName": "Investability",
+      "sectionWeight": 5,
+      "sectionScoreRaw": 8,
+      "sectionScoreWeighted": 0.4,
+      "sectionPassedMinimumCheck": true,
+      "sectionSummary": "Liquidity and disclosure remain supportive.",
+      "sectionConfidenceScore": 0.8,
+      "subScores": [
+        {
+          "subScoreName": "Liquidity",
+          "subScoreWeight": 40,
+          "subScoreValue": 8,
+          "subScoreSummary": "Healthy trading liquidity.",
+          "trendDirection": "stable",
+          "evidenceStrength": "high",
+          "metricBasis": "quant",
+          "evidenceRefIds": ["ev-financial-1"]
+        },
+        {
+          "subScoreName": "Data quality / completeness",
+          "subScoreWeight": 25,
+          "subScoreValue": 8,
+          "subScoreSummary": "Coverage is sufficient for repeatable review.",
+          "trendDirection": "stable",
+          "evidenceStrength": "medium",
+          "metricBasis": "hybrid",
+          "evidenceRefIds": ["ev-text-1"]
+        },
+        {
+          "subScoreName": "Basic investability suitability",
+          "subScoreWeight": 20,
+          "subScoreValue": 8,
+          "subScoreSummary": "Business quality fits long-term book.",
+          "trendDirection": "stable",
+          "evidenceStrength": "medium",
+          "metricBasis": "hybrid",
+          "evidenceRefIds": ["ev-text-1"]
+        },
+        {
+          "subScoreName": "Listing / operating history sufficiency",
+          "subScoreWeight": 15,
+          "subScoreValue": 8,
+          "subScoreSummary": "Long operating history supports longitudinal analysis.",
+          "trendDirection": "stable",
+          "evidenceStrength": "high",
+          "metricBasis": "quant",
+          "evidenceRefIds": ["ev-financial-1"]
+        }
+      ],
+      "evidenceRefs": [
+        {
+          "id": "ev-financial-1",
+          "sourceType": "financial_data",
+          "sourceDate": "2026-04-23T00:00:00Z",
+          "sourceTitle": "Five-year financial summary",
+          "excerptOrMetricName": "Average daily traded value",
+          "excerptOrMetricValue": "₹420 crore",
+          "evidenceSummary": "Trading liquidity remains sufficient for both books.",
+          "evidenceDirection": "positive"
+        }
+      ]
+    }
+  ],
+  "positionSnapshot": {
+    "isOwned": true,
+    "quantity": 125,
+    "averageCost": 1450,
+    "marketPriceAtReview": 1585,
+    "marketValue": 198125,
+    "positionPctOfBook": 4.2,
+    "positionPctOfTotalPortfolio": 2.9,
+    "unrealizedPnlAbs": 16875,
+    "unrealizedPnlPct": 9.31,
+    "targetPositionPct": 5,
+    "maxPositionPct": 10,
+    "underweightVsTargetPct": 0.8,
+    "overweightVsTargetPct": 0,
+    "ownedSinceDate": "2025-11-15T00:00:00Z"
+  },
+  "changeLog": {
+    "previousReviewId": "507f1f77bcf86cd799439020",
+    "weightedTotalScoreChange": 0.4,
+    "bucketChange": "",
+    "actionChange": "",
+    "thesisStatusChange": "active",
+    "majorPositiveChanges": ["Execution consistency improved."],
+    "majorNegativeChanges": [],
+    "sectionScoreChanges": {
+      "Management / Governance": 0.8
+    },
+    "subScoreChanges": {
+      "Management / Governance::Execution consistency": 1.1
+    },
+    "requiresExitReview": false,
+    "changeSummary": "Incremental strengthening without thesis break."
+  },
+  "createdAt": "2026-04-23T00:00:00Z",
+  "updatedAt": "2026-04-23T00:00:00Z"
+}

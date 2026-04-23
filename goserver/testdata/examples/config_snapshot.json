@@ -1,0 +1,24 @@
+{
+  "bookType": "investing",
+  "mode": "balanced",
+  "schemaVersion": "v1alpha1",
+  "configJson": {
+    "schemaVersion": "v1alpha1",
+    "environment": "development",
+    "bookType": "investing",
+    "mode": "balanced",
+    "global": {
+      "defaultTimezone": "Asia/Kolkata"
+    },
+    "investing": {
+      "defaultMode": "balanced",
+      "watchlistBuckets": ["research", "watch", "buy_ready", "hold", "exit_review"]
+    },
+    "asyncAi": {
+      "enabled": true,
+      "provider": "openai-batch",
+      "apiKey": ""
+    }
+  },
+  "createdAt": "2026-04-23T06:30:00Z"
+}
