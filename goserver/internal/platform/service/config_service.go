@@ -35,7 +35,7 @@ func (service *DefaultConfigService) CreateSnapshot(ctx context.Context, bookTyp
 		return nil, fmt.Errorf("config snapshot repository is not configured")
 	}
 
-	payload, err := buildSnapshotPayload(service.config, bookType, mode)
+	payload, err := service.config.ToSnapshotMap(bookType, mode)
 	if err != nil {
 		return nil, err
 	}
@@ -65,29 +65,4 @@ func (service *DefaultConfigService) GetSnapshot(ctx context.Context, id string)
 	}
 
 	return snapshot, nil
-}
-
-func buildSnapshotPayload(config platformconfig.AppConfig, bookType domain.BookType, mode string) (map[string]any, error) {
-	currentConfig, err := config.MarshalSanitizedJSON()
-	if err != nil {
-		return nil, err
-	}
-
-	payload := map[string]any{
-		"schemaVersion": config.SchemaVersion,
-		"environment":   config.Environment,
-		"global":        currentConfig["global"],
-		"ui":            currentConfig["ui"],
-		"asyncAi":       currentConfig["asyncAi"],
-		"bookType":      bookType,
-		"mode":          mode,
-	}
-	if bookType == domain.BookTypeInvesting {
-		payload["investing"] = currentConfig["investing"]
-	}
-	if bookType == domain.BookTypeTrading {
-		payload["trading"] = currentConfig["trading"]
-	}
-
-	return payload, nil
 }

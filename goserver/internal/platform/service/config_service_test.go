@@ -42,16 +42,16 @@ func TestConfigServiceCreateSnapshotSanitizesSecrets(t *testing.T) {
 	if err != nil {
 		t.Fatalf("CreateSnapshot returned error: %v", err)
 	}
-	if snapshot.ConfigJSON["asyncAi"] == nil {
-		t.Fatalf("expected asyncAi to be present in snapshot payload")
+	if snapshot.ConfigJSON["ai"] == nil {
+		t.Fatalf("expected ai to be present in snapshot payload")
 	}
 
 	currentConfig, err := service.CurrentConfig(context.Background())
 	if err != nil {
 		t.Fatalf("CurrentConfig returned error: %v", err)
 	}
-	asyncAI := currentConfig["asyncAi"].(map[string]any)
-	if _, exists := asyncAI["apiKey"]; exists {
+	ai := currentConfig["ai"].(map[string]any)
+	if _, exists := ai["apiKey"]; exists {
 		t.Fatalf("expected api key to be omitted from sanitized config")
 	}
 }

@@ -22,6 +22,17 @@ const (
 	maxPageSize     = 500
 )
 
+var (
+	// Legacy compatibility aliases for callers that still import mongo-specific sentinels.
+	ErrNotFound           = platformrepo.ErrNotFound
+	ErrAlreadyExists      = platformrepo.ErrAlreadyExists
+	ErrConflict           = platformrepo.ErrConflict
+	ErrImmutableState     = platformrepo.ErrImmutableState
+	ErrImmutableReview    = platformrepo.ErrImmutableState
+	ErrInvalidTransition  = platformrepo.ErrInvalidTransition
+	ErrPreconditionFailed = platformrepo.ErrPreconditionFailed
+)
+
 type Collections struct {
 	Companies             *mongo.Collection
 	CompanyReviews        *mongo.Collection

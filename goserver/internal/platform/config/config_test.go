@@ -6,6 +6,7 @@ func TestLoadBytesYAML(t *testing.T) {
 	input := []byte(`
 schemaVersion: v1alpha1
 environment: test
+timezone: Asia/Kolkata
 server:
   port: 9090
   readHeaderTimeout: 5s
@@ -28,7 +29,6 @@ mongo:
     providerBatchJobs: query_jobs
     providerBatchIterations: submissions_iterations
 global:
-  schemaVersion: v1alpha1
   defaultTimezone: Asia/Kolkata
   dataSources:
     financialDataProvider: a
@@ -59,7 +59,7 @@ global:
 
 func TestValidateRejectsBrokenSectionWeights(t *testing.T) {
 	config := Default()
-	config.Investing.SectionWeights[0].Weight = 99
+	config.Investing.SectionWeights.Investability = 99
 
 	if err := config.Validate(); err == nil {
 		t.Fatalf("expected validation error for invalid section weights")
