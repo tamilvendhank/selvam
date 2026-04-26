@@ -202,12 +202,24 @@ func (request ContinueWorkflowRequest) Validate() error {
 
 type ContinueWorkflowResult struct {
 	WorkflowRunID              primitive.ObjectID                `json:"workflowRunId,omitempty"`
+	BookType                   domaincommon.BookType             `json:"bookType,omitempty"`
+	CurrentStatus              domaincommon.WorkflowRunStatus    `json:"currentStatus,omitempty"`
+	Readiness                  WorkflowContinuationReadiness     `json:"readiness,omitempty"`
+	Continued                  bool                              `json:"continued,omitempty"`
+	Blocked                    bool                              `json:"blocked,omitempty"`
+	Completed                  bool                              `json:"completed,omitempty"`
+	Failed                     bool                              `json:"failed,omitempty"`
+	DryRun                     bool                              `json:"dryRun,omitempty"`
 	ContinuedWorkflowRunIDs    []primitive.ObjectID              `json:"continuedWorkflowRunIds,omitempty"`
 	CompletedWorkflowRunIDs    []primitive.ObjectID              `json:"completedWorkflowRunIds,omitempty"`
 	StillBlockedWorkflowRunIDs []primitive.ObjectID              `json:"stillBlockedWorkflowRunIds,omitempty"`
 	FailedWorkflowRunIDs       []primitive.ObjectID              `json:"failedWorkflowRunIds,omitempty"`
+	PlannedSteps               []domaincommon.WorkflowStepName   `json:"plannedSteps,omitempty"`
 	ExecutedSteps              []domaincommon.WorkflowStepName   `json:"executedSteps,omitempty"`
+	SkippedSteps               []domaincommon.WorkflowStepName   `json:"skippedSteps,omitempty"`
+	FailedSteps                []domaincommon.WorkflowStepName   `json:"failedSteps,omitempty"`
 	NextSuggestedStep          domaincommon.WorkflowStepName     `json:"nextSuggestedStep,omitempty"`
+	Blockers                   []servicecommon.BlockingCondition `json:"blockers,omitempty"`
 	PartialFailures            []servicecommon.PartialFailure    `json:"partialFailures,omitempty"`
 	Summary                    servicecommon.ContinuationSummary `json:"summary,omitempty"`
 }

@@ -284,3 +284,145 @@ func isMaterializableBatchItem(item *domainaijob.AIBatchItem) bool {
 		item.ValidationStatus == domaincommon.ValidationStatusValid &&
 		!item.TargetReviewID.IsZero()
 }
+
+func buildSingleContinuationExecutionSummary(
+	result *ContinueWorkflowResult,
+	startedAt time.Time,
+	completedAt time.Time,
+) servicecommon.ContinuationSummary {
+	outcome := servicecommon.ServiceOutcomeSuccess
+	message := "workflow continuation executed"
+	successCount := 0
+	blockedCount := 0
+	continuedCount := 0
+	completedCount := 0
+
+	switch {
+	case result.DryRun:
+		outcome = servicecommon.ServiceOutcomeDryRun
+		message = "workflow continuation dry run completed"
+	case result.Blocked:
+		outcome = servicecommon.ServiceOutcomeBlocked
+		message = "workflow continuation is blocked"
+		blockedCount = 1
+	case result.Failed:
+		outcome = servicecommon.ServiceOutcomeFailed
+		message = "workflow continuation failed"
+	case result.Completed:
+		outcome = servicecommon.ServiceOutcomeSuccess
+		message = "workflow continuation completed workflow"
+	case !result.Continued && len(result.SkippedSteps) == 0:
+		outcome = servicecommon.ServiceOutcomeNoop
+		message = "no continuation steps executed"
+	}
+
+	if result.Continued || result.DryRun {
+		successCount = 1
+		continuedCount = 1
+	}
+	if result.Completed {
+		completedCount = 1
+	}
+	if len(result.PartialFailures) > 0 && outcome == servicecommon.ServiceOutcomeSuccess {
+		outcome = servicecommon.ServiceOutcomePartial
+	}
+
+	return servicecommon.ContinuationSummary{
+		OperationSummary: servicecommon.OperationSummary{
+			Operation:      "continue_workflow",
+			Outcome:        outcome,
+			AttemptedCount: 1,
+			SuccessCount:   successCount,
+			SkippedCount:   len(result.SkippedSteps),
+			FailureCount:   len(result.FailedSteps),
+			DryRun:         result.DryRun,
+			StartedAt:      &startedAt,
+			CompletedAt:    &completedAt,
+			Message:        message,
+		},
+		ReadyCount:     successCount,
+		BlockedCount:   blockedCount,
+		ContinuedCount: continuedCount,
+		CompletedCount: completedCount,
+	}
+}
+
+func buildBulkContinuationExecutionSummary(
+	attempted int,
+	continued int,
+	completed int,
+	blocked int,
+	failed int,
+	partialFailures int,
+	dryRun bool,
+	hasMore bool,
+	startedAt time.Time,
+	completedAt time.Time,
+) servicecommon.ContinuationSummary {
+	outcome := servicecommon.ServiceOutcomeSuccess
+	switch {
+	case dryRun:
+		outcome = servicecommon.ServiceOutcomeDryRun
+	case failed > 0 && continued > 0:
+		outcome = servicecommon.ServiceOutcomePartial
+	case failed > 0:
+		outcome = servicecommon.ServiceOutcomeFailed
+	case continued == 0 && blocked > 0:
+		outcome = servicecommon.ServiceOutcomeBlocked
+	case continued == 0:
+		outcome = servicecommon.ServiceOutcomeNoop
+	case partialFailures > 0:
+		outcome = servicecommon.ServiceOutcomePartial
+	}
+
+	message := fmt.Sprintf("continued %d workflow(s), completed %d, blocked %d, failed %d", continued, completed, blocked, failed)
+	if dryRun {
+		message = fmt.Sprintf("dry run: %s", message)
+	}
+	if hasMore {
+		message = fmt.Sprintf("%s; more eligible workflows may be available", message)
+	}
+
+	return servicecommon.ContinuationSummary{
+		OperationSummary: servicecommon.OperationSummary{
+			Operation:      "continue_eligible_workflows",
+			Outcome:        outcome,
+			AttemptedCount: attempted,
+			SuccessCount:   continued,
+			SkippedCount:   blocked,
+			FailureCount:   failed + partialFailures,
+			DryRun:         dryRun,
+			StartedAt:      &startedAt,
+			CompletedAt:    &completedAt,
+			Message:        message,
+		},
+		ReadyCount:     continued,
+		BlockedCount:   blocked,
+		ContinuedCount: continued,
+		CompletedCount: completed,
+	}
+}
+
+func appendDecisionIfMissing(
+	decisions []EvaluateWorkflowContinuationResult,
+	result *ContinueWorkflowResult,
+) []EvaluateWorkflowContinuationResult {
+	if result == nil || result.WorkflowRunID.IsZero() {
+		return decisions
+	}
+	for _, decision := range decisions {
+		if decision.WorkflowRunID == result.WorkflowRunID {
+			return decisions
+		}
+	}
+	return append(decisions, EvaluateWorkflowContinuationResult{
+		WorkflowRunID:      result.WorkflowRunID,
+		BookType:           result.BookType,
+		CurrentStatus:      result.CurrentStatus,
+		Readiness:          result.Readiness,
+		ReadyToContinue:    !result.Blocked && !result.Failed,
+		NextSuggestedStep:  result.NextSuggestedStep,
+		Blockers:           result.Blockers,
+		ContinuationReason: continuationReasonForReadiness(result.Readiness),
+	})
+}
