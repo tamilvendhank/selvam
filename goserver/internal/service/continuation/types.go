@@ -18,6 +18,84 @@ const (
 	ContinuationReasonPreconditionsFailed ContinuationReason = "preconditions_failed"
 )
 
+type WorkflowContinuationReadiness string
+
+const (
+	WorkflowContinuationReadinessReadyToContinue     WorkflowContinuationReadiness = "ready_to_continue"
+	WorkflowContinuationReadinessWaitingExternal     WorkflowContinuationReadiness = "waiting_external"
+	WorkflowContinuationReadinessWaitingValidation   WorkflowContinuationReadiness = "waiting_validation"
+	WorkflowContinuationReadinessWaitingMaterialize  WorkflowContinuationReadiness = "waiting_materialization"
+	WorkflowContinuationReadinessWaitingFinalization WorkflowContinuationReadiness = "waiting_finalization"
+	WorkflowContinuationReadinessBlockedByFailures   WorkflowContinuationReadiness = "blocked_by_failures"
+	WorkflowContinuationReadinessAlreadyCompleted    WorkflowContinuationReadiness = "already_completed"
+	WorkflowContinuationReadinessFailedTerminal      WorkflowContinuationReadiness = "failed_terminal"
+	WorkflowContinuationReadinessInvalidState        WorkflowContinuationReadiness = "invalid_state"
+)
+
+type WorkflowContinuationCounts struct {
+	WorkflowSteps WorkflowContinuationStepCounts      `json:"workflowSteps,omitempty"`
+	BatchJobs     WorkflowContinuationBatchJobCounts  `json:"batchJobs,omitempty"`
+	BatchItems    WorkflowContinuationBatchItemCounts `json:"batchItems,omitempty"`
+	Reviews       WorkflowContinuationReviewCounts    `json:"reviews,omitempty"`
+}
+
+type WorkflowContinuationStepCounts struct {
+	Total     int `json:"total,omitempty"`
+	Pending   int `json:"pending,omitempty"`
+	Running   int `json:"running,omitempty"`
+	Waiting   int `json:"waiting,omitempty"`
+	Completed int `json:"completed,omitempty"`
+	Failed    int `json:"failed,omitempty"`
+	Skipped   int `json:"skipped,omitempty"`
+}
+
+type WorkflowContinuationBatchJobCounts struct {
+	Total              int `json:"total,omitempty"`
+	Created            int `json:"created,omitempty"`
+	Submitted          int `json:"submitted,omitempty"`
+	Running            int `json:"running,omitempty"`
+	PartiallyCompleted int `json:"partiallyCompleted,omitempty"`
+	Completed          int `json:"completed,omitempty"`
+	Failed             int `json:"failed,omitempty"`
+	Cancelled          int `json:"cancelled,omitempty"`
+	TimedOut           int `json:"timedOut,omitempty"`
+}
+
+type WorkflowContinuationBatchItemCounts struct {
+	Total              int `json:"total,omitempty"`
+	Pending            int `json:"pending,omitempty"`
+	Submitted          int `json:"submitted,omitempty"`
+	Processing         int `json:"processing,omitempty"`
+	Completed          int `json:"completed,omitempty"`
+	Failed             int `json:"failed,omitempty"`
+	InvalidOutput      int `json:"invalidOutput,omitempty"`
+	Skipped            int `json:"skipped,omitempty"`
+	Valid              int `json:"valid,omitempty"`
+	Invalid            int `json:"invalid,omitempty"`
+	NotValidated       int `json:"notValidated,omitempty"`
+	PendingValidation  int `json:"pendingValidation,omitempty"`
+	Unreconciled       int `json:"unreconciled,omitempty"`
+	Materializable     int `json:"materializable,omitempty"`
+	TerminalFailures   int `json:"terminalFailures,omitempty"`
+	TerminalSuccessful int `json:"terminalSuccessful,omitempty"`
+}
+
+type WorkflowContinuationReviewCounts struct {
+	Total                     int `json:"total,omitempty"`
+	Pending                   int `json:"pending,omitempty"`
+	PendingInput              int `json:"pendingInput,omitempty"`
+	PendingAI                 int `json:"pendingAI,omitempty"`
+	AICompletedUnvalidated    int `json:"aiCompletedUnvalidated,omitempty"`
+	ValidationFailed          int `json:"validationFailed,omitempty"`
+	AIValidated               int `json:"aiValidated,omitempty"`
+	Materialized              int `json:"materialized,omitempty"`
+	Finalizable               int `json:"finalizable,omitempty"`
+	Finalized                 int `json:"finalized,omitempty"`
+	Superseded                int `json:"superseded,omitempty"`
+	MaterializationIncomplete int `json:"materializationIncomplete,omitempty"`
+	FinalizationIncomplete    int `json:"finalizationIncomplete,omitempty"`
+}
+
 type EvaluateWorkflowContinuationRequest struct {
 	WorkflowRunID primitive.ObjectID    `json:"workflowRunId"`
 	BookType      domaincommon.BookType `json:"bookType,omitempty"`
@@ -42,6 +120,8 @@ func (request EvaluateWorkflowContinuationRequest) Validate() error {
 type EvaluateWorkflowContinuationResult struct {
 	WorkflowRunID            primitive.ObjectID                `json:"workflowRunId"`
 	BookType                 domaincommon.BookType             `json:"bookType,omitempty"`
+	CurrentStatus            domaincommon.WorkflowRunStatus    `json:"currentStatus,omitempty"`
+	Readiness                WorkflowContinuationReadiness     `json:"readiness,omitempty"`
 	ReadyToContinue          bool                              `json:"readyToContinue"`
 	WaitingOnExternalJobs    bool                              `json:"waitingOnExternalJobs,omitempty"`
 	WaitingOnValidation      bool                              `json:"waitingOnValidation,omitempty"`
@@ -50,6 +130,7 @@ type EvaluateWorkflowContinuationResult struct {
 	NextSuggestedStep        domaincommon.WorkflowStepName     `json:"nextSuggestedStep,omitempty"`
 	ContinuationReason       ContinuationReason                `json:"continuationReason,omitempty"`
 	Blockers                 []servicecommon.BlockingCondition `json:"blockers,omitempty"`
+	Counts                   WorkflowContinuationCounts        `json:"counts,omitempty"`
 	Summary                  servicecommon.ContinuationSummary `json:"summary,omitempty"`
 }
 
@@ -80,11 +161,13 @@ func (request EvaluateManyWorkflowContinuationsRequest) Validate() error {
 }
 
 type EvaluateManyWorkflowContinuationsResult struct {
-	ReadyWorkflowRunIDs   []primitive.ObjectID                 `json:"readyWorkflowRunIds,omitempty"`
-	BlockedWorkflowRunIDs []primitive.ObjectID                 `json:"blockedWorkflowRunIds,omitempty"`
-	Decisions             []EvaluateWorkflowContinuationResult `json:"decisions,omitempty"`
-	PartialFailures       []servicecommon.PartialFailure       `json:"partialFailures,omitempty"`
-	Summary               servicecommon.ContinuationSummary    `json:"summary,omitempty"`
+	ReadyWorkflowRunIDs            []primitive.ObjectID                 `json:"readyWorkflowRunIds,omitempty"`
+	BlockedWorkflowRunIDs          []primitive.ObjectID                 `json:"blockedWorkflowRunIds,omitempty"`
+	TerminalWorkflowRunIDs         []primitive.ObjectID                 `json:"terminalWorkflowRunIds,omitempty"`
+	FailedEvaluationWorkflowRunIDs []primitive.ObjectID                 `json:"failedEvaluationWorkflowRunIds,omitempty"`
+	Decisions                      []EvaluateWorkflowContinuationResult `json:"decisions,omitempty"`
+	PartialFailures                []servicecommon.PartialFailure       `json:"partialFailures,omitempty"`
+	Summary                        servicecommon.ContinuationSummary    `json:"summary,omitempty"`
 }
 
 func (result EvaluateManyWorkflowContinuationsResult) HasReadyWork() bool {

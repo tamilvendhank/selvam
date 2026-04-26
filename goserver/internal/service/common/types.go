@@ -428,6 +428,7 @@ type BlockingCondition struct {
 	BatchItemID   primitive.ObjectID            `json:"batchItemId,omitempty"`
 	ReviewID      primitive.ObjectID            `json:"reviewId,omitempty"`
 	Code          string                        `json:"code,omitempty"`
+	Severity      ValidationIssueSeverity       `json:"severity,omitempty"`
 	Message       string                        `json:"message"`
 	Retry         RetryPolicyHint               `json:"retry,omitempty"`
 	WaitingOnStep domaincommon.WorkflowStepName `json:"waitingOnStep,omitempty"`
